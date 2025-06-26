@@ -55,6 +55,7 @@ Top-bar nav pills: **Studio**, **Dashboard**.  Gear icon opens the Settings drop
 | `/app/studio/generate/media` | `MediaGenerationPage` | Multimodal generation |
 | `/app/studio/build` | `BuildPlaygroundPage` | Visual builder for workflow/apps |
 | `/app/studio/history` | `PromptHistoryPage` | Saved prompts & runs |
+| `/chat` → redirects to `/app/studio/chat` | — | Alias / quick link to Chat Playground |
 
 #### 3.3 Dashboard (Admin)
 | Path | Component | |

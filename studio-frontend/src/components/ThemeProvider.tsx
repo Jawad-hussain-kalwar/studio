@@ -51,11 +51,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         palette: {
           mode: isDark ? "dark" : "light",
           primary: {
-            main: "#006d77",
+            main: "#009688", // Teal color from styles.md
+            dark: "#00695c",
+            light: "#4db6ac",
             contrastText: "#ffffff",
           },
           secondary: {
-            main: "#cddc39",
+            main: "#CDDC39", // Lime-yellow color from styles.md
+            dark: "#9e9d24",
+            light: "#dce775",
             contrastText: "#000000",
           },
           background: {
@@ -82,30 +86,38 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               }),
         },
         typography: {
+          // Reduce overall scale for a more compact interface
+          fontSize: 10, // smaller default body font size (px)
           fontFamily: '"Montserrat", "Roboto", "Helvetica", "Arial", sans-serif',
           h1: {
             fontFamily: '"Montserrat", sans-serif',
             fontWeight: 600,
+            fontSize: '2rem',
           },
           h2: {
             fontFamily: '"Montserrat", sans-serif',
             fontWeight: 600,
+            fontSize: '1.4rem',
           },
           h3: {
             fontFamily: '"Montserrat", sans-serif',
             fontWeight: 600,
+            fontSize: '1.2rem',
           },
           h4: {
             fontFamily: '"Montserrat", sans-serif',
             fontWeight: 600,
+            fontSize: '1.1rem',
           },
           h5: {
             fontFamily: '"Montserrat", sans-serif',
             fontWeight: 600,
+            fontSize: '1.0rem',
           },
           h6: {
             fontFamily: '"Montserrat", sans-serif',
             fontWeight: 600,
+            fontSize: '0.8rem',
           },
         },
         shape: {
@@ -118,7 +130,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               root: {
                 borderRadius: 12,
                 textTransform: "none", // Preserve original case
-                fontWeight: 500,
+                fontWeight: 400,
               },
             },
           },
@@ -142,6 +154,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             styleOverrides: {
               root: {
                 borderRadius: 12,
+              },
+            },
+          },
+          // Ensure navigation surfaces have square edges (no outside rounded corners)
+          MuiAppBar: {
+            styleOverrides: {
+              root: {
+                borderRadius: 0,
+              },
+            },
+          },
+          MuiDrawer: {
+            styleOverrides: {
+              paper: {
+                borderRadius: 0,
               },
             },
           },
