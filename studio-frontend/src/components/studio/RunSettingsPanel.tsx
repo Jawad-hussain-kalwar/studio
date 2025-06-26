@@ -20,7 +20,7 @@ import {
 import {
   //Close as CloseIcon,
   ExpandMore as ExpandMoreIcon,
-  Settings as SettingsIcon,
+  Science as ScienceIcon,
 } from '@mui/icons-material';
 import { useStudioStore } from '../../stores/studioStore';
 
@@ -103,21 +103,20 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
         <Box
           sx={{
             p: 3,
-            borderBottom: '1px solid',
-            borderColor: 'divider',
+            pb: 2, // Reduce bottom padding since no divider
             display: 'flex',
             alignItems: 'center',
             gap: 2,
           }}
         >
-          <SettingsIcon sx={{ color: 'primary.main' }} />
+          <ScienceIcon sx={{ color: 'primary.main' }} />
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
             Run settings
           </Typography>
         </Box>
 
         {/* Content */}
-        <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+        <Box sx={{ flexGrow: 1, overflow: 'auto', px: 3, pt: 1, pb: 3 }}>
           {/* Model Selection */}
           <Box sx={{ mb: 4 }}>
             <FormControl fullWidth>
@@ -150,7 +149,7 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
               p: 2,
               border: '1px solid',
               borderColor: 'divider',
-              borderRadius: 2,
+              borderRadius: 1, // Match model dropdown border radius
               bgcolor: alpha('#009688', 0.02),
             }}
           >
@@ -255,6 +254,9 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
                 size="small"
                 sx={{ 
                   width: 80,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 1, // Match the model dropdown border radius
+                  },
                   '& input[type=number]': {
                     MozAppearance: 'textfield', // Remove arrows in Firefox
                   },

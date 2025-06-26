@@ -73,7 +73,7 @@ const PromptCardGrid: React.FC<PromptCardGridProps> = ({ onPromptSelect }) => {
       </Typography>
 
       {/* What's new section */}
-      <Box sx={{ width: '100%', maxWidth: 900 }}>
+      <Box sx={{ width: '100%', maxWidth: 800 }}>
         <Typography
           variant="h6"
           sx={{
