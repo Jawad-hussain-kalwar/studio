@@ -60,6 +60,7 @@ body {
   font-size: clamp(2.5rem, 5vw + 1rem, 6rem);
   background: linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   margin: 0;

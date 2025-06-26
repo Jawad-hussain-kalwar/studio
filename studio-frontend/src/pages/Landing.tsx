@@ -24,16 +24,9 @@ const Landing = () => {
         />
       </Box>
 
-      <h1 className="title">
-        AI STUDIO
-      </h1>
+      <h1 className="title">AI STUDIO</h1>
       <Stack direction="row" sx={{ mt: 4 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          component={RouterLink}
-          to="/signin"
-        >
+        <Button variant="contained" color="primary" component={RouterLink} to="/signin">
           Get Started
         </Button>
       </Stack>
@@ -41,4 +34,4 @@ const Landing = () => {
   );
 };
 
-export default Landing; 
+export default Landing;

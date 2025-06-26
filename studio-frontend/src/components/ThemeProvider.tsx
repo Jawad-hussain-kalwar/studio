@@ -1,68 +1,46 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ThemeProvider as MuiThemeProvider,
   createTheme,
   useMediaQuery,
   CssBaseline,
-} from '@mui/material';
-
-// Theme mode type
-type ThemeMode = 'light' | 'dark' | 'system';
-
-// Theme context interface
-interface ThemeContextType {
-  mode: ThemeMode;
-  setMode: (mode: ThemeMode) => void;
-  toggleMode: () => void;
-  isDark: boolean;
-}
-
-// Create theme context
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-// Custom hook to use theme context
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+} from "@mui/material";
+import { ThemeContext, type ThemeMode, type ThemeContextType } from "./ThemeContext.tsx";
 
 // Get initial theme mode from localStorage or default to system
 const getInitialMode = (): ThemeMode => {
   try {
-    const stored = localStorage.getItem('studio-theme-mode');
-    if (stored && ['light', 'dark', 'system'].includes(stored)) {
+    const stored = localStorage.getItem("studio-theme-mode");
+    if (stored && ["light", "dark", "system"].includes(stored)) {
       return stored as ThemeMode;
     }
   } catch (error) {
-    console.warn('Failed to read theme from localStorage:', error);
+    console.warn("Failed to read theme from localStorage:", error);
   }
-  return 'system';
+  return "system";
 };
 
 // Theme provider component
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const systemPrefersDark = useMediaQuery('(prefers-color-scheme: dark)');
+  const systemPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
   const [mode, setModeState] = useState<ThemeMode>(getInitialMode);
 
   // Determine if dark mode should be active
-  const isDark = mode === 'dark' || (mode === 'system' && systemPrefersDark);
+  const isDark = mode === "dark" || (mode === "system" && systemPrefersDark);
 
   // Set mode with localStorage persistence
   const setMode = (newMode: ThemeMode) => {
     setModeState(newMode);
     try {
-      localStorage.setItem('studio-theme-mode', newMode);
+      localStorage.setItem("studio-theme-mode", newMode);
     } catch (error) {
-      console.warn('Failed to save theme to localStorage:', error);
+      console.warn("Failed to save theme to localStorage:", error);
     }
   };
 
   // Toggle between light and dark (sets explicit mode, not system)
   const toggleMode = () => {
-    const newMode = isDark ? 'light' : 'dark';
+    const newMode = isDark ? "light" : "dark";
     setMode(newMode);
   };
 
@@ -71,35 +49,35 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     () =>
       createTheme({
         palette: {
-          mode: isDark ? 'dark' : 'light',
+          mode: isDark ? "dark" : "light",
           primary: {
-            main: '#006d77',
-            contrastText: '#ffffff',
+            main: "#006d77",
+            contrastText: "#ffffff",
           },
           secondary: {
-            main: '#cddc39',
-            contrastText: '#000000',
+            main: "#cddc39",
+            contrastText: "#000000",
           },
           background: {
-            default: isDark ? '#121212' : '#fafafa',
-            paper: isDark ? '#1e1e1e' : '#ffffff',
+            default: isDark ? "#121212" : "#fafafa",
+            paper: isDark ? "#1e1e1e" : "#ffffff",
           },
           // Custom colors for glassmorphism
           ...(isDark
             ? {
                 // Dark mode custom colors
                 customGlass: {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: 'rgba(255, 255, 255, 0.1)',
-                  blur: '12px',
+                  background: "rgba(255, 255, 255, 0.1)",
+                  border: "rgba(255, 255, 255, 0.1)",
+                  blur: "12px",
                 },
               }
             : {
                 // Light mode custom colors
                 customGlass: {
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  border: 'rgba(255, 255, 255, 0.3)',
-                  blur: '20px',
+                  background: "rgba(255, 255, 255, 0.6)",
+                  border: "rgba(255, 255, 255, 0.3)",
+                  blur: "20px",
                 },
               }),
         },
@@ -139,7 +117,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             styleOverrides: {
               root: {
                 borderRadius: 12,
-                textTransform: 'none', // Preserve original case
+                textTransform: "none", // Preserve original case
                 fontWeight: 500,
               },
             },
@@ -147,7 +125,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           MuiTextField: {
             styleOverrides: {
               root: {
-                '& .MuiOutlinedInput-root': {
+                "& .MuiOutlinedInput-root": {
                   borderRadius: 12,
                 },
               },
@@ -174,7 +152,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Update document data-theme attribute for CSS custom properties
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   }, [isDark]);
 
   const contextValue: ThemeContextType = {
@@ -193,19 +171,3 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     </ThemeContext.Provider>
   );
 };
-
-// Helper hook to get theme-aware background image
-export const useThemeBackground = (lightImage: string, darkImage: string) => {
-  const { isDark } = useTheme();
-  return isDark ? darkImage : lightImage;
-};
-
-// Helper hook to get glassmorphism styles
-export const useGlassStyles = () => {
-  const { isDark } = useTheme();
-  return {
-    backdropFilter: `blur(${isDark ? '12px' : '20px'})`,
-    background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
-    border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.3)'}`,
-  };
-}; 

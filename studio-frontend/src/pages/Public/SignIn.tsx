@@ -1,18 +1,11 @@
-import {
-  Box,
-  Button,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import GoogleIcon from "@mui/icons-material/Google";
 import AppleIcon from "@mui/icons-material/Apple";
-import { useTheme, useThemeBackground, useGlassStyles } from "../../components/ThemeProvider";
+import { useThemeBackground, useGlassStyles } from "../../components/themeHelpers.tsx";
 import { ThemeToggle } from "../../components/ThemeToggle";
 
 const SignIn = () => {
-  const { isDark } = useTheme();
   const backgroundImage = useThemeBackground(
     "/assets/img/ui/blob1-ul.jpg",
     "/assets/img/ui/blob1-ud.jpg"
@@ -44,9 +37,9 @@ const SignIn = () => {
           justifyContent: "center",
           ...glassStyles,
           borderLeft: glassStyles.border,
-          borderTop: 'none',
-          borderRight: 'none',
-          borderBottom: 'none',
+          borderTop: "none",
+          borderRight: "none",
+          borderBottom: "none",
         }}
       >
         {/* Theme Toggle - Top Right */}
@@ -82,7 +75,8 @@ const SignIn = () => {
               sx={{
                 fontSize: "1rem",
                 fontWeight: "600",
-                background: "linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%)",
+                background:
+                  "linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 textShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
@@ -92,14 +86,14 @@ const SignIn = () => {
             </Typography>
           </Box>
 
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              mb: 3, 
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 3,
               fontWeight: "500",
               color: "white",
               fontSize: "1.1rem",
-              textShadow: "0 2px 4px rgba(0,0,0,0.5)"
+              textShadow: "0 2px 4px rgba(0,0,0,0.5)",
             }}
           >
             Log in
@@ -110,8 +104,8 @@ const SignIn = () => {
               variant="outlined"
               startIcon={<GoogleIcon fontSize="small" />}
               fullWidth
-              sx={{ 
-                justifyContent: "flex-start", 
+              sx={{
+                justifyContent: "flex-start",
                 height: 56,
                 bgcolor: "rgba(255,255,255,0.2)",
                 color: "white",
@@ -123,7 +117,7 @@ const SignIn = () => {
                 "&:hover": {
                   bgcolor: "rgba(255,255,255,0.3)",
                   borderColor: "rgba(255,255,255,0.5)",
-                }
+                },
               }}
             >
               Continue with Google
@@ -132,8 +126,8 @@ const SignIn = () => {
               variant="outlined"
               startIcon={<AppleIcon fontSize="small" />}
               fullWidth
-              sx={{ 
-                justifyContent: "flex-start", 
+              sx={{
+                justifyContent: "flex-start",
                 height: 56,
                 bgcolor: "rgba(255,255,255,0.2)",
                 color: "white",
@@ -145,7 +139,7 @@ const SignIn = () => {
                 "&:hover": {
                   bgcolor: "rgba(255,255,255,0.3)",
                   borderColor: "rgba(255,255,255,0.5)",
-                }
+                },
               }}
             >
               Continue with Apple
@@ -154,13 +148,13 @@ const SignIn = () => {
 
           <Typography
             variant="body2"
-            sx={{ 
-              mt: 2.5, 
-              mb: 1.5, 
+            sx={{
+              mt: 2.5,
+              mb: 1.5,
               color: "white",
               fontWeight: "500",
               textShadow: "0 1px 2px rgba(0,0,0,0.5)",
-              fontSize: "0.75rem"
+              fontSize: "0.75rem",
             }}
           >
             Continue with email
@@ -172,8 +166,8 @@ const SignIn = () => {
               type="email"
               fullWidth
               variant="outlined"
-              sx={{ 
-                '& .MuiInputBase-root': { 
+              sx={{
+                "& .MuiInputBase-root": {
                   height: 56,
                   bgcolor: "rgba(255,255,255,0.2)",
                   color: "white",
@@ -181,21 +175,21 @@ const SignIn = () => {
                   paddingLeft: "24px",
                   display: "flex",
                   alignItems: "center",
-                  paddingRight: "16px"
+                  paddingRight: "16px",
                 },
-                '& .MuiInputBase-input': {
-                  padding: '0 0 0 0',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box',
-                  paddingLeft: '0',
-                  paddingRight: '0',
-                  paddingTop: '16.5px',
-                  paddingBottom: '16.5px',
+                "& .MuiInputBase-input": {
+                  padding: "0 0 0 0",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  boxSizing: "border-box",
+                  paddingLeft: "0",
+                  paddingRight: "0",
+                  paddingTop: "16.5px",
+                  paddingBottom: "16.5px",
                 },
-                '& .MuiInputLabel-root': { color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" },
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: "rgba(255,255,255,0.3)" },
+                "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" },
+                "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
               }}
             />
             <TextField
@@ -203,8 +197,8 @@ const SignIn = () => {
               type="password"
               fullWidth
               variant="outlined"
-              sx={{ 
-                '& .MuiInputBase-root': { 
+              sx={{
+                "& .MuiInputBase-root": {
                   height: 56,
                   bgcolor: "rgba(255,255,255,0.2)",
                   color: "white",
@@ -212,34 +206,34 @@ const SignIn = () => {
                   paddingLeft: "24px",
                   display: "flex",
                   alignItems: "center",
-                  paddingRight: "16px"
+                  paddingRight: "16px",
                 },
-                '& .MuiInputBase-input': {
-                  padding: '0 0 0 0',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box',
-                  paddingLeft: '0',
-                  paddingRight: '0',
-                  paddingTop: '16.5px',
-                  paddingBottom: '16.5px',
+                "& .MuiInputBase-input": {
+                  padding: "0 0 0 0",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  boxSizing: "border-box",
+                  paddingLeft: "0",
+                  paddingRight: "0",
+                  paddingTop: "16.5px",
+                  paddingBottom: "16.5px",
                 },
-                '& .MuiInputLabel-root': { color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" },
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: "rgba(255,255,255,0.3)" },
+                "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" },
+                "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
               }}
             />
             <Button
               variant="contained"
               color="primary"
               fullWidth
-              sx={{ 
-                height: 56, 
-                mb: 1.5, 
-                fontWeight: "500", 
+              sx={{
+                height: 56,
+                mb: 1.5,
+                fontWeight: "500",
                 fontSize: "0.8rem",
                 paddingLeft: "20px",
-                paddingRight: "20px"
+                paddingRight: "20px",
               }}
             >
               Log in
@@ -253,46 +247,42 @@ const SignIn = () => {
             <Button
               component={RouterLink}
               to="/signup"
-              sx={{ 
-                textTransform: "none", 
+              sx={{
+                textTransform: "none",
                 p: 0,
                 color: "primary.main",
                 fontWeight: "600",
-                fontSize: "0.75rem"
+                fontSize: "0.75rem",
               }}
             >
               Sign up
             </Button>
           </Typography>
 
-          <Typography
-            variant="body2"
-            align="center"
-            sx={{ mt: 1.5 }}
-          >
-            <Button sx={{ 
-              textTransform: "none", 
-              p: 0,
-              color: "primary.main",
-              fontWeight: "500",
-              fontSize: "0.75rem"
-            }}>
+          <Typography variant="body2" align="center" sx={{ mt: 1.5 }}>
+            <Button
+              sx={{
+                textTransform: "none",
+                p: 0,
+                color: "primary.main",
+                fontWeight: "500",
+                fontSize: "0.75rem",
+              }}
+            >
               I forgot my password
             </Button>
           </Typography>
 
-          <Typography
-            variant="body2"
-            align="center"
-            sx={{ mt: 3 }}
-          >
-            <Button sx={{ 
-              textTransform: "none", 
-              p: 0,
-              color: "primary.main",
-              fontWeight: "500",
-              fontSize: "0.75rem"
-            }}>
+          <Typography variant="body2" align="center" sx={{ mt: 3 }}>
+            <Button
+              sx={{
+                textTransform: "none",
+                p: 0,
+                color: "primary.main",
+                fontWeight: "500",
+                fontSize: "0.75rem",
+              }}
+            >
               Cookies Settings
             </Button>
           </Typography>
@@ -302,4 +292,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn; 
+export default SignIn;

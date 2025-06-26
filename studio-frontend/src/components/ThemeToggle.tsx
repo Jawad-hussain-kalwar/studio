@@ -1,23 +1,23 @@
-import React from 'react';
-import { IconButton, Tooltip } from '@mui/material';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness';
-import { useTheme } from './ThemeProvider';
+import React from "react";
+import { IconButton, Tooltip, type SxProps, type Theme } from "@mui/material";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import SettingsBrightnessIcon from "@mui/icons-material/SettingsBrightness";
+import { useTheme } from "./useTheme.tsx";
 
 interface ThemeToggleProps {
   /**
    * Size of the icon button
    */
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   /**
    * Custom styling via sx prop
    */
-  sx?: any;
+  sx?: SxProps<Theme>;
   /**
    * Color of the icon
    */
-  color?: 'inherit' | 'default' | 'primary' | 'secondary';
+  color?: "inherit" | "default" | "primary" | "secondary";
   /**
    * Whether to show system mode option (cycles through light -> dark -> system)
    */
@@ -25,9 +25,9 @@ interface ThemeToggleProps {
 }
 
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({
-  size = 'medium',
+  size = "medium",
   sx = {},
-  color = 'inherit',
+  color = "inherit",
   includeSystemMode = false,
 }) => {
   const { mode, setMode, toggleMode, isDark } = useTheme();
@@ -35,12 +35,12 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   const handleClick = () => {
     if (includeSystemMode) {
       // Cycle through: light -> dark -> system -> light
-      if (mode === 'light') {
-        setMode('dark');
-      } else if (mode === 'dark') {
-        setMode('system');
+      if (mode === "light") {
+        setMode("dark");
+      } else if (mode === "dark") {
+        setMode("system");
       } else {
-        setMode('light');
+        setMode("light");
       }
     } else {
       // Simple toggle between light and dark
@@ -49,7 +49,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   };
 
   const getIcon = () => {
-    if (includeSystemMode && mode === 'system') {
+    if (includeSystemMode && mode === "system") {
       return <SettingsBrightnessIcon />;
     }
     return isDark ? <LightModeIcon /> : <DarkModeIcon />;
@@ -57,11 +57,11 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const getTooltip = () => {
     if (includeSystemMode) {
-      if (mode === 'light') return 'Switch to dark mode';
-      if (mode === 'dark') return 'Switch to system mode';
-      return 'Switch to light mode';
+      if (mode === "light") return "Switch to dark mode";
+      if (mode === "dark") return "Switch to system mode";
+      return "Switch to light mode";
     }
-    return isDark ? 'Switch to light mode' : 'Switch to dark mode';
+    return isDark ? "Switch to light mode" : "Switch to dark mode";
   };
 
   return (
@@ -71,9 +71,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         size={size}
         color={color}
         sx={{
-          transition: 'transform 0.2s ease-in-out',
-          '&:hover': {
-            transform: 'scale(1.1)',
+          transition: "transform 0.2s ease-in-out",
+          "&:hover": {
+            transform: "scale(1.1)",
           },
           ...sx,
         }}
@@ -82,4 +82,4 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       </IconButton>
     </Tooltip>
   );
-}; 
+};

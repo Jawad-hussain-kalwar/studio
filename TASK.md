@@ -6,3 +6,13 @@
 - Implemented SignIn and SignUp pages with glassmorphic Auth panel, hero image, social buttons, and basic forms following `styles.md`.
 - Created `/public/assets/img/ui` asset directories and clarified static asset usage.
 - Added `@mui/icons-material` dependency.
+- **COMPLETED**: Fixed all TypeScript module resolution errors by adding explicit `.tsx` extensions to imports.
+- **COMPLETED**: Fixed remaining linting issues and established comprehensive linting rules:
+  - Removed unused `isDark` variables from SignIn/SignUp components
+  - Fixed `any` type usage in ThemeToggle by using proper `SxProps<Theme>` type
+  - Fixed fast refresh warnings by separating utility functions and context from components
+  - Created separate files: `themeHelpers.tsx`, `useTheme.tsx`, and `ThemeContext.tsx`
+  - Enhanced ESLint configuration with strict rules for TypeScript and React
+  - Added prettier for code formatting
+  - Added lint-staged and husky for pre-commit linting
+  - Added new npm scripts: `lint:fix`, `format`, `format:check`, `type-check`
