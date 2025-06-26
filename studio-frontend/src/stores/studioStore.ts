@@ -15,9 +15,6 @@ interface StudioState {
     total: number;
   };
   
-  // UI state
-  isSettingsDrawerOpen: boolean;
-  
   // Actions
   addMessage: (message: Omit<ChatMessage, 'id' | 'createdAt'>) => void;
   updateLastMessage: (content: string) => void;
@@ -28,7 +25,6 @@ interface StudioState {
   setIsGenerating: (isGenerating: boolean) => void;
   setTokenCount: (tokenCount: { prompt: number; completion: number; total: number }) => void;
   clearMessages: () => void;
-  setSettingsDrawerOpen: (open: boolean) => void;
 }
 
 export const useStudioStore = create<StudioState>((set) => ({
@@ -52,7 +48,6 @@ export const useStudioStore = create<StudioState>((set) => ({
     completion: 0,
     total: 0,
   },
-  isSettingsDrawerOpen: false,
 
   // Actions
   addMessage: (message) => {
@@ -100,6 +95,4 @@ export const useStudioStore = create<StudioState>((set) => ({
     messages: [],
     tokenCount: { prompt: 0, completion: 0, total: 0 },
   }),
-  
-  setSettingsDrawerOpen: (open) => set({ isSettingsDrawerOpen: open }),
 })); 

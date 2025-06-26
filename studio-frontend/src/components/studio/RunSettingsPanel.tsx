@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Drawer,
   Box,
   Typography,
   IconButton,
@@ -11,7 +10,6 @@ import {
   Slider,
   Switch,
   FormControlLabel,
-
   Chip,
   alpha,
   Accordion,
@@ -25,12 +23,11 @@ import {
 } from '@mui/icons-material';
 import { useStudioStore } from '../../stores/studioStore';
 
-interface RunSettingsDrawerProps {
-  open: boolean;
-  onClose: () => void;
+interface RunSettingsPanelProps {
+  // Remove open and onClose props since it's now permanent
 }
 
-const DRAWER_WIDTH = 360;
+const PANEL_WIDTH = 360;
 
 // Mock model data
 const availableModels = [
@@ -61,7 +58,7 @@ const toolDefinitions = [
   { key: 'code-execution', label: 'Code execution', description: 'Run and execute code' },
 ];
 
-const RunSettingsDrawer: React.FC<RunSettingsDrawerProps> = ({ open, onClose }) => {
+const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
   const {
     currentModel,
     temperature,
@@ -74,22 +71,19 @@ const RunSettingsDrawer: React.FC<RunSettingsDrawerProps> = ({ open, onClose }) 
     toggleTool,
   } = useStudioStore();
 
-
   const enabledToolsCount = Object.values(tools).filter(Boolean).length;
 
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      variant="temporary"
+    <Box
       sx={{
-        '& .MuiDrawer-paper': {
-          width: DRAWER_WIDTH,
-          bgcolor: 'background.paper',
-          borderLeft: '1px solid',
-          borderColor: 'divider',
-        },
+        width: PANEL_WIDTH,
+        height: '100%',
+        bgcolor: 'background.paper',
+        borderLeft: '1px solid',
+        borderColor: 'divider',
+        display: { xs: 'none', md: 'flex' }, // Hide on mobile, show on desktop
+        flexDirection: 'column',
+        flexShrink: 0, // Prevent shrinking
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -108,9 +102,6 @@ const RunSettingsDrawer: React.FC<RunSettingsDrawerProps> = ({ open, onClose }) 
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600 }}>
             Run settings
           </Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
         </Box>
 
         {/* Content */}
@@ -306,8 +297,8 @@ const RunSettingsDrawer: React.FC<RunSettingsDrawerProps> = ({ open, onClose }) 
           </Accordion>
         </Box>
       </Box>
-    </Drawer>
+    </Box>
   );
 };
 
-export default RunSettingsDrawer; 
+export default RunSettingsPanel; 

@@ -1,12 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { Box, IconButton } from '@mui/material';
-import { Settings as SettingsIcon } from '@mui/icons-material';
+import { Box } from '@mui/material';
 import { useStudioStore } from '../../../stores/studioStore';
 import { useStreamingChat } from '../../../hooks/useChatApi';
 import PromptCardGrid from '../../../components/studio/PromptCardGrid';
 import ChatMessageList from '../../../components/studio/ChatMessageList';
 import ChatInputDock from '../../../components/studio/ChatInputDock';
-import RunSettingsDrawer from '../../../components/studio/RunSettingsDrawer';
+import RunSettingsPanel from '../../../components/studio/RunSettingsPanel';
 
 const ChatPlaygroundPage: React.FC = () => {
   const {
@@ -16,12 +15,10 @@ const ChatPlaygroundPage: React.FC = () => {
     topP,
     tools,
     isGenerating,
-    isSettingsDrawerOpen,
     addMessage,
     updateLastMessage,
     setIsGenerating,
     setTokenCount,
-    setSettingsDrawerOpen,
   } = useStudioStore();
 
   const [currentStreamingContent, setCurrentStreamingContent] = useState('');
@@ -130,34 +127,21 @@ const ChatPlaygroundPage: React.FC = () => {
     <Box
       sx={{
         height: '100%',
+        width: '100%',
         display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
+        flexDirection: 'row',
       }}
     >
-      {/* Settings Button (floating, top-right) */}
-      <IconButton
-        onClick={() => setSettingsDrawerOpen(true)}
-        sx={{
-          position: 'absolute',
-          top: 16,
-          right: 16,
-          zIndex: 1000,
-          bgcolor: 'background.paper',
-          border: '1px solid',
-          borderColor: 'divider',
-          boxShadow: 2,
-          '&:hover': {
-            bgcolor: 'action.hover',
-            boxShadow: 4,
-          },
+      {/* Main Content Area (Left Side) */}
+      <Box 
+        sx={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          overflow: 'hidden',
+          minWidth: 0,
         }}
       >
-        <SettingsIcon />
-      </IconButton>
-
-      {/* Main Content Area */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Show PromptCardGrid when no messages, ChatMessageList when there are messages */}
         {messages.length === 0 ? (
           <PromptCardGrid onPromptSelect={handlePromptSelect} />
@@ -173,11 +157,8 @@ const ChatPlaygroundPage: React.FC = () => {
         />
       </Box>
 
-      {/* Settings Drawer */}
-      <RunSettingsDrawer
-        open={isSettingsDrawerOpen}
-        onClose={() => setSettingsDrawerOpen(false)}
-      />
+      {/* Settings Panel (Right Side) - Always visible */}
+      <RunSettingsPanel />
     </Box>
   );
 };

@@ -31,9 +31,9 @@ const AppLayout: React.FC = () => {
             bgcolor: 'background.default',
           }}
         >
-          <Container maxWidth={false} sx={{ height: '100%', py: 0 }}>
+          <Box sx={{ height: '100%' }}>
             <Outlet />
-          </Container>
+          </Box>
         </Box>
       </Box>
     </Box>
