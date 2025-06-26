@@ -1,8 +1,6 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
 }
 
 .logo {
@@ -39,4 +37,30 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* ====== AI STUDIO Landing Page Overrides ====== */
+body {
+  margin: 0;
+  display: block; /* Override Vite template flex layout */
+  /* Background color is now handled by MUI CssBaseline and ThemeProvider */
+}
+
+.landing {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.title {
+  font-family: "Montserrat", sans-serif;
+  font-size: clamp(2.5rem, 5vw + 1rem, 6rem);
+  background: linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  margin: 0;
 }
