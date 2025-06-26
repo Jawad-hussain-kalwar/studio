@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -15,6 +15,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  TextField,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -27,7 +28,7 @@ interface RunSettingsPanelProps {
   // Remove open and onClose props since it's now permanent
 }
 
-const PANEL_WIDTH = 360;
+const PANEL_WIDTH = 320;
 
 // Mock model data
 const availableModels = [
@@ -70,6 +71,17 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
     setTopP,
     toggleTool,
   } = useStudioStore();
+
+  // Local state for smooth slider interaction
+  const [localTemperature, setLocalTemperature] = useState(temperature);
+  // Local state for text input
+  const [inputValue, setInputValue] = useState(temperature.toFixed(1));
+
+  // Sync local state when global temperature changes
+  useEffect(() => {
+    setLocalTemperature(temperature);
+    setInputValue(temperature.toFixed(1));
+  }, [temperature]);
 
   const enabledToolsCount = Object.values(tools).filter(Boolean).length;
 
@@ -163,28 +175,101 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
             <Typography variant="subtitle2" gutterBottom>
               Temperature
             </Typography>
-            <Slider
-              value={temperature}
-              onChange={(_, value) => setTemperature(value as number)}
-              min={0}
-              max={2}
-              step={0.1}
-              marks={[
-                { value: 0, label: '0' },
-                { value: 1, label: '1' },
-                { value: 2, label: '2' },
-              ]}
-              valueLabelDisplay="auto"
-              sx={{
-                '& .MuiSlider-thumb': {
-                  bgcolor: 'primary.main',
-                },
-                '& .MuiSlider-track': {
-                  bgcolor: 'primary.main',
-                },
-              }}
-            />
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Slider
+                value={localTemperature}
+                onChange={(_, value) => setLocalTemperature(value as number)}
+                onChangeCommitted={(_, value) => setTemperature(Number((value as number).toFixed(1)))}
+                min={0}
+                max={2}
+                step={0.1}
+                valueLabelDisplay="auto"
+                sx={{
+                  flexGrow: 1,
+                  '& .MuiSlider-thumb': {
+                    bgcolor: 'primary.main',
+                  },
+                  '& .MuiSlider-track': {
+                    bgcolor: 'primary.main',
+                  },
+                }}
+              />
+              <TextField
+                type="text"
+                value={inputValue}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  
+                  // Allow empty input
+                  if (newValue === '') {
+                    setInputValue('');
+                    return;
+                  }
+                  
+                  // Only allow numbers and one decimal point
+                  if (/^\d*\.?\d*$/.test(newValue)) {
+                    // Ensure only one decimal point
+                    const decimalCount = (newValue.match(/\./g) || []).length;
+                    if (decimalCount <= 1) {
+                      setInputValue(newValue);
+                    }
+                  }
+                }}
+                onKeyDown={(e) => {
+                  // Handle Enter key - trigger blur validation
+                  if (e.key === 'Enter') {
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = parseFloat(e.target.value);
+                  
+                  // Validate only on blur and correct if needed
+                  if (isNaN(value) || value < 0) {
+                    const correctedValue = 0.0;
+                    setTemperature(correctedValue);
+                    setLocalTemperature(correctedValue);
+                    setInputValue(correctedValue.toFixed(1));
+                  } else if (value > 2.0) {
+                    const correctedValue = 2.0;
+                    setTemperature(correctedValue);
+                    setLocalTemperature(correctedValue);
+                    setInputValue(correctedValue.toFixed(1));
+                  } else {
+                    const roundedValue = Number(value.toFixed(1));
+                    setTemperature(roundedValue);
+                    setLocalTemperature(roundedValue);
+                    setInputValue(roundedValue.toFixed(1));
+                  }
+                }}
+                inputProps={{
+                  min: 0,
+                  max: 2.0,
+                  step: 0.1,
+                  style: { 
+                    textAlign: 'center',
+                    fontSize: '0.875rem',
+                    MozAppearance: 'textfield', // Remove arrows in Firefox
+                  }
+                }}
+                size="small"
+                sx={{ 
+                  width: 80,
+                  '& input[type=number]': {
+                    MozAppearance: 'textfield', // Remove arrows in Firefox
+                  },
+                  '& input[type=number]::-webkit-outer-spin-button': {
+                    WebkitAppearance: 'none', // Remove arrows in Chrome/Safari
+                    margin: 0,
+                  },
+                  '& input[type=number]::-webkit-inner-spin-button': {
+                    WebkitAppearance: 'none', // Remove arrows in Chrome/Safari
+                    margin: 0,
+                  },
+                }}
+              />
+            </Box>
+            <Typography variant="caption" color="text.secondary">
               Controls randomness. Lower values are more focused and deterministic.
             </Typography>
           </Box>
@@ -239,7 +324,13 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
                       </Typography>
                     </Box>
                   }
-                  sx={{ alignItems: 'flex-start', m: 0 }}
+                  labelPlacement="start"
+                  sx={{ 
+                    alignItems: 'flex-start', 
+                    m: 0,
+                    justifyContent: 'space-between',
+                    width: '100%',
+                  }}
                 />
               ))}
             </Box>

@@ -22,7 +22,7 @@ import {
   Home as HomeIcon,
 } from '@mui/icons-material';
 
-const DRAWER_WIDTH = 280;
+const DRAWER_WIDTH = 235;
 
 interface NavItem {
   label: string;
