@@ -1,30 +1,23 @@
 import React from 'react';
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import SideNav from './SideNav';
-import TopBar from './TopBar';
+import SideNav from './SideNav.tsx';
+import TopBar from './TopBar.tsx';
 
 const AppLayout: React.FC = () => {
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
-      {/* Side Navigation */}
-      <SideNav />
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Top Bar - Full Width */}
+      <TopBar />
       
-      {/* Main Content Area */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Top Bar */}
-        <TopBar />
+      {/* Content Area with Side Navigation */}
+      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+        {/* Side Navigation */}
+        <SideNav />
         
-        {/* Page Content */}
+        {/* Main Content Area */}
         <Box
+          component="main"
           sx={{
             flexGrow: 1,
             overflow: 'auto',

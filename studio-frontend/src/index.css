@@ -12,6 +12,74 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Theme-aware scrollbar styling */
+:root[data-theme="light"] {
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="dark"] {
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+/* Default: hidden scrollbar thumbs */
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  border: none;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+
+/* Show scrollbars on hover */
+.scrollbar-hover::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+}
+
+.scrollbar-hover::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Show scrollbars when actively scrolling */
+.scrolling::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+}
+
+.scrolling::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox auto-hide simulation */
+* {
+  scrollbar-width: none;
+}
+
+.scrollbar-hover {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.scrolling {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -63,3 +131,8 @@ button:focus-visible {
 }
 
 /* Theme colors are now handled by MUI ThemeProvider */
+
+/* global icon stroke weight tweak */
+.MuiSvgIcon-root {
+  stroke-width: 1 !important; /* thinner lines (default is 2) */
+}

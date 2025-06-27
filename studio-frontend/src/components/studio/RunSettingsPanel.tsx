@@ -19,8 +19,8 @@ import {
 } from '@mui/material';
 import {
   //Close as CloseIcon,
-  ExpandMore as ExpandMoreIcon,
-  Science as ScienceIcon,
+  ExpandMoreOutlined as ExpandMoreIcon,
+  ScienceOutlined as ScienceIcon,
 } from '@mui/icons-material';
 import { useStudioStore } from '../../stores/studioStore';
 
@@ -90,12 +90,18 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
       sx={{
         width: PANEL_WIDTH,
         height: '100%',
-        bgcolor: 'background.paper',
-        borderLeft: '1px solid',
-        borderColor: 'divider',
+        // Match TopBar glassmorphic background
+        backgroundColor: (theme) => theme.palette.mode === 'light'
+          ? 'rgb(255,255,255)'
+          : 'rgb(0,0,0)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        // Remove the left border outline for a seamless layout
+        borderLeft: 'none',
         display: { xs: 'none', md: 'flex' }, // Hide on mobile, show on desktop
         flexDirection: 'column',
         flexShrink: 0, // Prevent shrinking
+        pt: { xs: '56px', sm: '64px' }, // Offset for fixed TopBar
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

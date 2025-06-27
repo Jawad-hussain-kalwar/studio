@@ -6,6 +6,7 @@ import SignIn from "./pages/Public/SignIn.tsx";
 import SignUp from "./pages/Public/SignUp.tsx";
 import AppLayout from "./components/AppLayout.tsx";
 import ChatPlaygroundPage from "./pages/App/Studio/ChatPlaygroundPage.tsx";
+import ComingSoon from "./components/ComingSoon.tsx";
 
 function App() {
   return (
@@ -21,13 +22,13 @@ function App() {
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Navigate to="/app/studio/chat" replace />} />
             <Route path="studio/chat" element={<ChatPlaygroundPage />} />
-            <Route path="home" element={<div>Home Page - Coming Soon</div>} />
-            <Route path="studio/stream" element={<div>Stream Playground - Coming Soon</div>} />
-            <Route path="studio/generate/image" element={<div>Image Generation - Coming Soon</div>} />
-            <Route path="studio/generate/speech" element={<div>Speech Generation - Coming Soon</div>} />
-            <Route path="studio/generate/media" element={<div>Media Generation - Coming Soon</div>} />
-            <Route path="studio/build" element={<div>Build Playground - Coming Soon</div>} />
-            <Route path="studio/history" element={<div>History - Coming Soon</div>} />
+            <Route path="home" element={<ComingSoon message="Home Page - Coming Soon" />} />
+            <Route path="studio/stream" element={<ComingSoon message="Stream Playground - Coming Soon" />} />
+            <Route path="studio/generate/image" element={<ComingSoon message="Image Generation - Coming Soon" />} />
+            <Route path="studio/generate/speech" element={<ComingSoon message="Speech Generation - Coming Soon" />} />
+            <Route path="studio/generate/media" element={<ComingSoon message="Media Generation - Coming Soon" />} />
+            <Route path="studio/build" element={<ComingSoon message="Build Playground - Coming Soon" />} />
+            <Route path="studio/history" element={<ComingSoon message="History - Coming Soon" />} />
           </Route>
           
           {/* Alias route for chat */}

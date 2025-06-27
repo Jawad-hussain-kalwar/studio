@@ -26,7 +26,8 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages, isLoading }
         flexGrow: 1,
         overflow: 'auto',
         px: 3,
-        py: 2,
+        pt: { xs: 9, sm: 10 }, // top padding 72px/80px to clear AppBar
+        pb: 20, // bottom padding so content can scroll under input (matches existing value below)
         display: 'flex',
         flexDirection: 'column',
         gap: 0.5,
@@ -46,29 +47,17 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages, isLoading }
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 2,
+            gap: 1.5,
             py: 2,
-            px: 3,
+            mb: 3, // match ChatMessageItem spacing
           }}
         >
-          <Box
+          <CircularProgress
+            size={16}
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: 'grey.100',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              color: 'primary.main',
             }}
-          >
-            <CircularProgress
-              size={16}
-              sx={{
-                color: 'primary.main',
-              }}
-            />
-          </Box>
+          />
           <Box>
             <Typography
               variant="body2"

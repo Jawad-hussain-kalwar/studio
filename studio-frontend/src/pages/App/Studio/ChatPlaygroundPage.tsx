@@ -83,17 +83,8 @@ const ChatPlaygroundPage: React.FC = () => {
 
     } catch (error) {
       console.error('Chat error:', error);
-      updateLastMessage('Sorry, I encountered an error. Please try again.');
-      
-      // Update the last message to show error state
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage && lastMessage.role === 'assistant') {
-        addMessage({
-          ...lastMessage,
-          content: 'Sorry, I encountered an error while processing your request. Please try again.',
-          error: true,
-        });
-      }
+      // Mark the placeholder assistant message as an error and update its content
+      updateLastMessage('Sorry, I encountered an error while processing your request. Please try again.', true);
     } finally {
       setIsGenerating(false);
       setCurrentStreamingContent('');
@@ -140,16 +131,20 @@ const ChatPlaygroundPage: React.FC = () => {
           flexDirection: 'column', 
           overflow: 'hidden',
           minWidth: 0,
+          height: '100%',
         }}
       >
-        {/* Show PromptCardGrid when no messages, ChatMessageList when there are messages */}
-        {messages.length === 0 ? (
-          <PromptCardGrid onPromptSelect={handlePromptSelect} />
-        ) : (
-          <ChatMessageList messages={messages} isLoading={isGenerating} />
-        )}
+        {/* Content that can scroll under the floating input */}
+        <Box sx={{ flexGrow: 1, overflow: 'auto', height: '100%' }}>
+          {/* Show PromptCardGrid when no messages, ChatMessageList when there are messages */}
+          {messages.length === 0 ? (
+            <PromptCardGrid onPromptSelect={handlePromptSelect} />
+          ) : (
+            <ChatMessageList messages={messages} isLoading={isGenerating} />
+          )}
+        </Box>
 
-        {/* Chat Input - always visible */}
+        {/* Floating Chat Input - rendered but positioned fixed */}
         <ChatInputDock
           onSendMessage={handleSendMessage}
           isGenerating={isGenerating}

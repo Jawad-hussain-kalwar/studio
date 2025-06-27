@@ -1,7 +1,7 @@
 import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import GoogleIcon from "@mui/icons-material/Google";
-import AppleIcon from "@mui/icons-material/Apple";
+import GoogleOutlined from "@mui/icons-material/Google";
+import AppleOutlined from "@mui/icons-material/Apple";
 import { useThemeBackground, useGlassStyles } from "../../components/themeHelpers.tsx";
 import { ThemeToggle } from "../../components/ThemeToggle";
 
@@ -102,7 +102,7 @@ const SignUp = () => {
           <Stack spacing={1.5}>
             <Button
               variant="outlined"
-              startIcon={<GoogleIcon fontSize="small" />}
+              startIcon={<GoogleOutlined fontSize="small" />}
               fullWidth
               sx={{
                 justifyContent: "flex-start",
@@ -124,7 +124,7 @@ const SignUp = () => {
             </Button>
             <Button
               variant="outlined"
-              startIcon={<AppleIcon fontSize="small" />}
+              startIcon={<AppleOutlined fontSize="small" />}
               fullWidth
               sx={{
                 justifyContent: "flex-start",

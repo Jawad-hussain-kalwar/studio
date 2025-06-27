@@ -53,7 +53,8 @@ const PromptCardGrid: React.FC<PromptCardGridProps> = ({ onPromptSelect }) => {
         justifyContent: 'center',
         minHeight: '60vh',
         px: 4,
-        py: 6,
+        pt: { xs: 14, sm: 16 },
+        pb: 20,
       }}
     >
       {/* Welcome Header */}

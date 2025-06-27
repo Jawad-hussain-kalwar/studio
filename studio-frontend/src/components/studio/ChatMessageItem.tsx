@@ -3,16 +3,13 @@ import {
   Box,
   Paper,
   Typography,
-  Avatar,
   IconButton,
   alpha,
 } from '@mui/material';
 import {
-  Person as PersonIcon,
-  SmartToy as BotIcon,
-  ContentCopy as CopyIcon,
-  ThumbUp as ThumbUpIcon,
-  ThumbDown as ThumbDownIcon,
+  ContentCopyOutlined as CopyIcon,
+  ThumbUpOutlined as ThumbUpIcon,
+  ThumbDownOutlined as ThumbDownIcon,
 } from '@mui/icons-material';
 import type { ChatMessage } from '../../types/index.ts';
 
@@ -28,6 +25,11 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => {
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
   };
+
+  // Do not render messages that have no content (e.g. assistant placeholder before streaming starts)
+  if (!message.content || message.content.trim() === '') {
+    return null;
+  }
 
   if (isSystem) {
     return (
@@ -59,29 +61,15 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => {
     <Box
       sx={{
         display: 'flex',
-        gap: 2,
         mb: 3,
-        alignItems: 'flex-start',
-        flexDirection: isUser ? 'row-reverse' : 'row',
       }}
     >
-      {/* Avatar */}
-      <Avatar
-        sx={{
-          width: 32,
-          height: 32,
-          bgcolor: isUser ? 'primary.main' : 'grey.100',
-          color: isUser ? 'primary.contrastText' : 'text.primary',
-        }}
-      >
-        {isUser ? <PersonIcon fontSize="small" /> : <BotIcon fontSize="small" />}
-      </Avatar>
-
       {/* Message Bubble */}
       <Box
         sx={{
           maxWidth: '70%',
           minWidth: '200px',
+          ml: isUser ? 'auto' : 0,
         }}
       >
         {/* Message Content */}
@@ -92,7 +80,6 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => {
             bgcolor: isUser ? alpha('#009688', 0.1) : 'background.paper',
             border: '1px solid',
             borderColor: isUser ? alpha('#009688', 0.2) : 'divider',
-            borderLeft: isAssistant ? '3px solid #009688' : undefined,
             borderRadius: 2,
             position: 'relative',
             ...(message.error && {

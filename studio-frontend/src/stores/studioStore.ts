@@ -17,7 +17,7 @@ interface StudioState {
   
   // Actions
   addMessage: (message: Omit<ChatMessage, 'id' | 'createdAt'>) => void;
-  updateLastMessage: (content: string) => void;
+  updateLastMessage: (content: string, error?: boolean) => void;
   setCurrentModel: (model: string) => void;
   setTemperature: (temperature: number) => void;
   setTopP: (topP: number) => void;
@@ -61,14 +61,15 @@ export const useStudioStore = create<StudioState>((set) => ({
     }));
   },
 
-  updateLastMessage: (content) => {
+  updateLastMessage: (content, error) => {
     set((state) => {
       const messages = [...state.messages];
       if (messages.length > 0) {
         messages[messages.length - 1] = {
           ...messages[messages.length - 1],
           content,
-        };
+          ...(error !== undefined ? { error } : {}),
+        } as typeof messages[number];
       }
       return { messages };
     });

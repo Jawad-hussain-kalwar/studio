@@ -1,8 +1,8 @@
 import React from "react";
 import { IconButton, Tooltip, type SxProps, type Theme } from "@mui/material";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import SettingsBrightnessIcon from "@mui/icons-material/SettingsBrightness";
+import LightModeOutlined from "@mui/icons-material/LightModeOutlined";
+import DarkModeOutlined from "@mui/icons-material/DarkModeOutlined";
+import SettingsBrightnessOutlined from "@mui/icons-material/SettingsBrightnessOutlined";
 import { useTheme } from "./useTheme.tsx";
 
 interface ThemeToggleProps {
@@ -50,9 +50,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const getIcon = () => {
     if (includeSystemMode && mode === "system") {
-      return <SettingsBrightnessIcon />;
+      return <SettingsBrightnessOutlined />;
     }
-    return isDark ? <LightModeIcon /> : <DarkModeIcon />;
+    return isDark ? <LightModeOutlined /> : <DarkModeOutlined />;
   };
 
   const getTooltip = () => {

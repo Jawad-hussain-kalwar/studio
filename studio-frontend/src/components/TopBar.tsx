@@ -6,152 +6,141 @@ import {
   Box,
   Button,
   IconButton,
-  Breadcrumbs,
-  Link,
-  InputBase,
   alpha,
+  Tooltip,
 } from '@mui/material';
 import {
-  Search as SearchIcon,
-  Settings as SettingsIcon,
-  AccountCircle as AccountCircleIcon,
-  Key as KeyIcon,
+  SettingsOutlined as SettingsIcon,
+  AccountCircleOutlined as AccountCircleIcon,
+  KeyOutlined as KeyIcon,
+  EditOutlined as EditOutlinedIcon,
+  FileCopyOutlined as FileCopyOutlinedIcon,
+  ContentPasteOutlined as ContentPasteOutlinedIcon,
+  CompareArrowsOutlined as CompareArrowsOutlinedIcon,
+  SaveOutlined as SaveOutlinedIcon,
+  RefreshOutlined as RefreshOutlinedIcon,
 } from '@mui/icons-material';
-import { useLocation, Link as RouterLink } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
-
-// Styled search component
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(1),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  width: '100%',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    [theme.breakpoints.up('sm')]: {
-      width: '12ch',
-      '&:focus': {
-        width: '20ch',
-      },
-    },
-  },
-}));
+import { useLocation } from 'react-router-dom';
+import { useStudioStore } from '../stores/studioStore.ts';
+import { ThemeToggle } from './ThemeToggle.tsx';
 
 const TopBar: React.FC = () => {
   const location = useLocation();
 
-  // Generate breadcrumbs based on current path
-  const getBreadcrumbs = () => {
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs = [];
+  const isChatPage = location.pathname.includes('/studio/chat');
 
-    if (pathSegments.includes('studio')) {
-      breadcrumbs.push({ label: 'Studio', path: '/app/studio/chat' });
-      
-      if (pathSegments.includes('chat')) {
-        breadcrumbs.push({ label: 'Chat', path: '/app/studio/chat', active: true });
-      } else if (pathSegments.includes('stream')) {
-        breadcrumbs.push({ label: 'Stream', path: '/app/studio/stream', active: true });
-      } else if (pathSegments.includes('generate')) {
-        if (pathSegments.includes('image')) {
-          breadcrumbs.push({ label: 'Generate Image', path: '/app/studio/generate/image', active: true });
-        } else if (pathSegments.includes('speech')) {
-          breadcrumbs.push({ label: 'Generate Speech', path: '/app/studio/generate/speech', active: true });
-        } else if (pathSegments.includes('media')) {
-          breadcrumbs.push({ label: 'Generate Media', path: '/app/studio/generate/media', active: true });
-        }
-      } else if (pathSegments.includes('build')) {
-        breadcrumbs.push({ label: 'Build', path: '/app/studio/build', active: true });
-      } else if (pathSegments.includes('history')) {
-        breadcrumbs.push({ label: 'History', path: '/app/studio/history', active: true });
-      }
-    } else if (pathSegments.includes('dashboard')) {
-      breadcrumbs.push({ label: 'Dashboard', path: '/app/dashboard', active: true });
-    } else if (pathSegments.includes('home')) {
-      breadcrumbs.push({ label: 'Home', path: '/app/home', active: true });
-    }
+  const { messages } = useStudioStore();
 
-    return breadcrumbs;
-  };
+  const chatTitle = React.useMemo(() => {
+    if (!isChatPage) return '';
+    const first = messages.find((m) => m.role === 'user' && m.content?.trim());
+    if (!first) return 'New Chat';
+    const words = first.content.split(/\s+/).slice(0, 5);
+    return words.join(' ') + (first.content.split(/\s+/).length > 5 ? '…' : '');
+  }, [messages, isChatPage]);
 
-  const breadcrumbs = getBreadcrumbs();
+  // Breadcrumb generation logic removed as breadcrumbs are no longer displayed
 
   return (
     <AppBar
-      position="static"
+      position="fixed"
       elevation={0}
       sx={{
-        bgcolor: 'background.paper',
+        // Glassmorphic background at 50% visibility
+        backgroundColor: (theme) => theme.palette.mode === 'light'
+          ? 'rgba(255,255,255,0.5)'
+          : 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)', // Safari support
         color: 'text.primary',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
+        // Remove bottom border for seamless integration with side panels
+        zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
       <Toolbar sx={{ gap: 2 }}>
-        {/* Breadcrumbs */}
-        <Box sx={{ flexGrow: 1 }}>
-          <Breadcrumbs aria-label="breadcrumb">
-            {breadcrumbs.map((crumb) => (
-              crumb.active ? (
-                <Typography key={crumb.path} color="text.primary" fontWeight={500}>
-                  {crumb.label}
-                </Typography>
-              ) : (
-                <Link
-                  key={crumb.path}
-                  component={RouterLink}
-                  to={crumb.path}
-                  underline="hover"
-                  color="inherit"
-                >
-                  {crumb.label}
-                </Link>
-              )
-            ))}
-          </Breadcrumbs>
+        {/* Logo + Brand */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mr: 3,
+            flexShrink: 0,
+          }}
+        >
+          <Box
+            component="img"
+            src="/assets/img/logo-x128.png"
+            alt="AI Studio logo"
+            sx={{ width: 28, height: 28, mr: 1 }}
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 600,
+              background:
+                'linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            AI STUDIO
+          </Typography>
         </Box>
 
-        {/* Search Bar */}
-        <Search>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase
-            placeholder="Search…"
-            inputProps={{ 'aria-label': 'search' }}
-          />
-        </Search>
+        {/* Chat title & actions (only on Chat page) */}
+        {isChatPage ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1, ml: 7 }}>
+            {/* Title */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography variant="subtitle1" fontWeight={600} noWrap>
+                {chatTitle}
+              </Typography>
+              <Tooltip title="Edit title">
+                <IconButton size="small" color="primary">
+                  <EditOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            {/* Flexible spacer */}
+            <Box sx={{ flexGrow: 1 }} />
+
+            {/* Action icons */}
+            <Tooltip title="Copy chat">
+              <IconButton size="small" color="primary">
+                <FileCopyOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="System instructions">
+              <IconButton size="small" color="primary">
+                <ContentPasteOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Compare mode">
+              <IconButton size="small" color="primary">
+                <CompareArrowsOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Save chat">
+              <IconButton size="small" color="primary">
+                <SaveOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Clear chat">
+              <IconButton size="small" color="primary">
+                <RefreshOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ) : (
+          <Box sx={{ flexGrow: 1 }} />
+        )}
 
         {/* Get API Key Button */}
         <Button
           startIcon={<KeyIcon />}
           variant="outlined"
-          size="small"
+          size="medium"
           sx={{
             borderColor: 'primary.main',
             color: 'primary.main',
@@ -167,23 +156,43 @@ const TopBar: React.FC = () => {
         {/* Settings */}
         <IconButton
           size="large"
-          color="inherit"
+          color="primary"
           sx={{
             '&:hover': {
               bgcolor: 'action.hover',
+            },
+            '& .MuiSvgIcon-root': {
+              fontSize: 18,
             },
           }}
         >
           <SettingsIcon />
         </IconButton>
 
-        {/* Profile Menu */}
-        <IconButton
+        {/* Theme Toggle */}
+        <ThemeToggle
           size="large"
-          color="inherit"
+          color="primary"
           sx={{
             '&:hover': {
               bgcolor: 'action.hover',
+            },
+            '& .MuiSvgIcon-root': {
+              fontSize: 18,
+            },
+          }}
+        />
+
+        {/* Profile Menu */}
+        <IconButton
+          size="large"
+          color="primary"
+          sx={{
+            '&:hover': {
+              bgcolor: 'action.hover',
+            },
+            '& .MuiSvgIcon-root': {
+              fontSize: 24,
             },
           }}
         >

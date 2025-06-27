@@ -32,3 +32,9 @@
   - Responsive design and accessibility features
   - Error handling and loading states
   - Theme integration with teal (#009688) and lime-yellow (#CDDC39) colors
+- **COMPLETED**: Add theme toggle button to authenticated app navbar between settings and profile buttons
+- **COMPLETED**: Add enhanced theme-aware scrollbar styling with auto-hide, translucent design, and invisible backgrounds
+
+### 2025-06-27
+- **COMPLETED**: Fixed misalignment of "Thinking..." loading indicator in ChatMessageList by removing extra horizontal padding and aligning spacing with other chat messages.
+- **COMPLETED**: Removed green accent bar from assistant messages.

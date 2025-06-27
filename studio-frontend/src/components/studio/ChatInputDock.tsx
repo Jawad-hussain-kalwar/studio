@@ -8,8 +8,8 @@ import {
   CircularProgress,
 } from '@mui/material';
 import {
-  Send as SendIcon,
-  Stop as StopIcon,
+  SendOutlined as SendIcon,
+  StopOutlined as StopIcon,
 } from '@mui/icons-material';
 
 interface ChatInputDockProps {
@@ -66,31 +66,47 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
   return (
     <Box
       sx={{
-        position: 'sticky',
+        position: 'fixed',
         bottom: 0,
+        left: 235, // Account for sidebar width
+        right: { xs: 0, md: 320 }, // Account for RunSettingsPanel width on desktop (320px)
         p: 3,
-        bgcolor: 'background.default',
-        borderTop: '1px solid',
-        borderColor: 'divider',
-        zIndex: 10,
+        zIndex: 1000,
+        // Make dock invisible so underlying messages remain fully visible
+        backdropFilter: 'none',
+        background: 'transparent',
+        borderTop: 'none',
       }}
     >
       <Box sx={{ maxWidth: 800, mx: 'auto' }}>
         <Paper
-          elevation={2}
+          elevation={0}
           sx={{
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             gap: 1,
             p: 1,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            transition: 'border-color 0.2s',
+            // Enhanced glassmorphism for the input container
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            background: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? 'rgba(18, 18, 18, 0.5)' 
+                : 'rgba(255, 255, 255, 0.5)',
+            border: (theme) => 
+              `1px solid ${theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.15)' 
+                : 'rgba(255, 255, 255, 0.3)'}`,
+            borderRadius: 2,
+            transition: 'all 0.2s ease-in-out',
             '&:focus-within': {
               borderColor: 'primary.main',
               boxShadow: (theme) =>
-                `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}, 0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}`,
+              background: (theme) => 
+                theme.palette.mode === 'dark' 
+                  ? 'rgba(18, 18, 18, 0.65)' 
+                  : 'rgba(255, 255, 255, 0.7)',
             },
           }}
         >
@@ -108,7 +124,7 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
               flexGrow: 1,
               px: 2,
               py: 1.5,
-              fontSize: '1rem',
+              fontSize: '0.9rem',
               lineHeight: 1.5,
               '& .MuiInputBase-input': {
                 resize: 'none',
@@ -134,6 +150,7 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
               height: 40,
               '&:hover': {
                 bgcolor: 'primary.dark',
+                transform: 'scale(1.05)',
               },
               '&:disabled': {
                 bgcolor: 'action.disabledBackground',
@@ -145,6 +162,7 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
                   color: 'rgba(0,0,0,0.87)',
                 },
               },
+              transition: 'all 0.2s ease-in-out',
             }}
             title={isGenerating ? 'Stop generating' : 'Send message (Enter)'}
           >
