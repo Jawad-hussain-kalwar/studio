@@ -6,7 +6,9 @@ import SignIn from "./pages/Public/SignIn.tsx";
 import SignUp from "./pages/Public/SignUp.tsx";
 import AppLayout from "./components/AppLayout.tsx";
 import ChatPlaygroundPage from "./pages/App/Studio/ChatPlaygroundPage.tsx";
+import GenerateImagePage from "./pages/App/Studio/GenerateImagePage.tsx";
 import ComingSoon from "./components/ComingSoon.tsx";
+import DashboardPage from "./pages/App/DashboardPage.tsx";
 
 function App() {
   return (
@@ -24,11 +26,12 @@ function App() {
             <Route path="studio/chat" element={<ChatPlaygroundPage />} />
             <Route path="home" element={<ComingSoon message="Home Page - Coming Soon" />} />
             <Route path="studio/stream" element={<ComingSoon message="Stream Playground - Coming Soon" />} />
-            <Route path="studio/generate/image" element={<ComingSoon message="Image Generation - Coming Soon" />} />
+            <Route path="studio/generate/image" element={<GenerateImagePage />} />
             <Route path="studio/generate/speech" element={<ComingSoon message="Speech Generation - Coming Soon" />} />
             <Route path="studio/generate/media" element={<ComingSoon message="Media Generation - Coming Soon" />} />
             <Route path="studio/build" element={<ComingSoon message="Build Playground - Coming Soon" />} />
             <Route path="studio/history" element={<ComingSoon message="History - Coming Soon" />} />
+            <Route path="dashboard" element={<DashboardPage />} />
           </Route>
           
           {/* Alias route for chat */}

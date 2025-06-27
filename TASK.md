@@ -38,3 +38,10 @@
 ### 2025-06-27
 - **COMPLETED**: Fixed misalignment of "Thinking..." loading indicator in ChatMessageList by removing extra horizontal padding and aligning spacing with other chat messages.
 - **COMPLETED**: Removed green accent bar from assistant messages.
+- **COMPLETED**: Added initial Image Generation Playground:
+  - Created `ImageRunSettingsPanel` component exposing diffusion model parameters (model, prompt, negative prompt, aspect ratio, steps, CFG scale, sampler, seed, high-res fix).
+  - Built `GenerateImagePage` with side-by-side layout (SideNav left, main canvas center, run settings panel right).
+  - Wired new route `/app/studio/generate/image` to the page and updated navigation.
+  - Updated App routing import statements accordingly.
+  - Placeholder canvas shows "No image generated." until backend integration.
+  - File count kept under 300 lines with modular design.

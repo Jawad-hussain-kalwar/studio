@@ -18,6 +18,8 @@ interface ChatInputDockProps {
   disabled?: boolean;
   onStop?: () => void;
   placeholder?: string;
+  showHint?: boolean;
+  clearOnSend?: boolean;
 }
 
 const ChatInputDock: React.FC<ChatInputDockProps> = ({
@@ -25,7 +27,9 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
   isGenerating = false,
   disabled = false,
   onStop,
-  placeholder = "Teach me a lesson on quadratic equations. Assume I know absolutely nothing about it. →|",
+  placeholder = "Press Enter to send, Shift+Enter for new line, Ctrl+Enter to force send →|",
+  showHint = true,
+  clearOnSend = true,
 }) => {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -42,7 +46,9 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
   const handleSubmit = () => {
     if (input.trim() && !isGenerating) {
       onSendMessage(input.trim());
-      setInput('');
+      if (clearOnSend) {
+        setInput('');
+      }
     }
   };
 
@@ -174,19 +180,20 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
           </IconButton>
         </Paper>
 
-        {/* Hint Text */}
-        <Box sx={{ mt: 1, textAlign: 'center' }}>
-          <Box
-            component="span"
-            sx={{
-              fontSize: '0.75rem',
-              color: 'text.secondary',
-              opacity: 0.7,
-            }}
-          >
-            Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for new line, <strong>Ctrl+Enter</strong> to force send
+        {showHint && (
+          <Box sx={{ mt: 1, textAlign: 'center' }}>
+            <Box
+              component="span"
+              sx={{
+                fontSize: '0.75rem',
+                color: 'text.secondary',
+                opacity: 0.7,
+              }}
+            >
+              Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for new line, <strong>Ctrl+Enter</strong> to force send
+            </Box>
           </Box>
-        </Box>
+        )}
       </Box>
     </Box>
   );

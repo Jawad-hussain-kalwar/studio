@@ -18,6 +18,7 @@ import {
   BuildOutlined as BuildIcon,
   HistoryOutlined as HistoryIcon,
   HomeOutlined as HomeIcon,
+  DashboardOutlined as DashboardIcon,
 } from '@mui/icons-material';
 
 const DRAWER_WIDTH = 235;
@@ -31,6 +32,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Home', path: '/app/home', icon: <HomeIcon />, section: 'main' },
+  { label: 'Dashboard', path: '/app/dashboard', icon: <DashboardIcon />, section: 'main' },
   { label: 'Chat', path: '/app/studio/chat', icon: <ChatIcon />, section: 'studio' },
   { label: 'Stream', path: '/app/studio/stream', icon: <StreamIcon />, section: 'studio' },
   { label: 'Generate Image', path: '/app/studio/generate/image', icon: <ImageIcon />, section: 'studio' },

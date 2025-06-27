@@ -19,6 +19,7 @@ import {
   CompareArrowsOutlined as CompareArrowsOutlinedIcon,
   SaveOutlined as SaveOutlinedIcon,
   RefreshOutlined as RefreshOutlinedIcon,
+  DownloadOutlined as DownloadIcon,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import { useStudioStore } from '../stores/studioStore.ts';
@@ -28,6 +29,7 @@ const TopBar: React.FC = () => {
   const location = useLocation();
 
   const isChatPage = location.pathname.includes('/studio/chat');
+  const isImagePage = location.pathname.includes('/studio/generate/image');
 
   const { messages } = useStudioStore();
 
@@ -38,6 +40,9 @@ const TopBar: React.FC = () => {
     const words = first.content.split(/\s+/).slice(0, 5);
     return words.join(' ') + (first.content.split(/\s+/).length > 5 ? '…' : '');
   }, [messages, isChatPage]);
+
+  // Placeholder image title – later will come from store/state
+  const imageTitle = 'First draft';
 
   // Breadcrumb generation logic removed as breadcrumbs are no longer displayed
 
@@ -129,6 +134,50 @@ const TopBar: React.FC = () => {
             <Tooltip title="Clear chat">
               <IconButton size="small" color="primary">
                 <RefreshOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ) : isImagePage ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1, ml: 7 }}>
+            {/* Title */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography variant="subtitle1" fontWeight={600} noWrap>
+                {imageTitle}
+              </Typography>
+              <Tooltip title="Edit title">
+                <IconButton size="small" color="primary">
+                  <EditOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            {/* Flexible spacer */}
+            <Box sx={{ flexGrow: 1 }} />
+
+            {/* Action icons for image canvas (save, download, refresh, copy, compare) */}
+            <Tooltip title="Save image">
+              <IconButton size="small" color="primary">
+                <SaveOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Download image">
+              <IconButton size="small" color="primary">
+                <DownloadIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Regenerate image">
+              <IconButton size="small" color="primary">
+                <RefreshOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Copy prompt">
+              <IconButton size="small" color="primary">
+                <FileCopyOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Compare mode">
+              <IconButton size="small" color="primary">
+                <CompareArrowsOutlinedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </Box>
