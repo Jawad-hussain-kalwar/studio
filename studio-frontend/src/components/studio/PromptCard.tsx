@@ -17,9 +17,9 @@ interface PromptCardProps {
 // Map categories to images
 const getCategoryImage = (category: string): string => {
   const imageMap: Record<string, string> = {
-    'Tool': '/assets/img/ui/blob1-ul.jpg',
-    'Audio': '/assets/img/ui/wave2.jpg',
-    'Image': '/assets/img/ui/blob3.jpg',
+    'Tool': '/assets/img/ui/blob2.png',
+    'Audio': '/assets/img/ui/wave1.png',
+    'Image': '/assets/img/ui/blob3.png',
     'Video': '/assets/img/ui/lamp1.jpg',
   };
   return imageMap[category] || '/assets/img/ui/blob2.jpg';

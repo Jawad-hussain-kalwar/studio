@@ -28,7 +28,7 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
   disabled = false,
   onStop,
   placeholder = "Press Enter to send, Shift+Enter for new line, Ctrl+Enter to force send →|",
-  showHint = true,
+  showHint = false,
   clearOnSend = true,
 }) => {
   const [input, setInput] = useState('');
