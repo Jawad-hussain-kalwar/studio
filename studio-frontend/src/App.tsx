@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import Landing from "./pages/Landing.tsx";
 import SignIn from "./pages/Public/SignIn.tsx";
@@ -9,6 +9,26 @@ import ChatPlaygroundPage from "./pages/App/Studio/ChatPlaygroundPage.tsx";
 import GenerateImagePage from "./pages/App/Studio/GenerateImagePage.tsx";
 import ComingSoon from "./components/ComingSoon.tsx";
 import DashboardPage from "./pages/App/DashboardPage.tsx";
+import OAuthCallback from "./components/OAuthCallback.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
+
+const AppWithOAuthCheck = () => {
+  const [searchParams] = useSearchParams();
+  const hasToken = searchParams.has('token');
+  const hasError = searchParams.has('error');
+  
+  // If we have OAuth parameters, show the callback component
+  if (hasToken || hasError) {
+    return <OAuthCallback />;
+  }
+  
+  // Otherwise, show the protected app layout
+  return (
+    <ProtectedRoute>
+      <AppLayout />
+    </ProtectedRoute>
+  );
+};
 
 function App() {
   return (
@@ -21,7 +41,7 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           
           {/* Authenticated App Routes */}
-          <Route path="/app" element={<AppLayout />}>
+          <Route path="/app" element={<AppWithOAuthCheck />}>
             <Route index element={<Navigate to="/app/studio/chat" replace />} />
             <Route path="studio/chat" element={<ChatPlaygroundPage />} />
             <Route path="home" element={<ComingSoon message="Home Page - Coming Soon" />} />

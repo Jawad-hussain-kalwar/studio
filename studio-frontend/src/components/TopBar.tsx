@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -8,6 +8,12 @@ import {
   IconButton,
   alpha,
   Tooltip,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   SettingsOutlined as SettingsIcon,
@@ -20,13 +26,18 @@ import {
   SaveOutlined as SaveOutlinedIcon,
   RefreshOutlined as RefreshOutlinedIcon,
   DownloadOutlined as DownloadIcon,
+  LogoutOutlined as LogoutIcon,
+  PersonOutlined as PersonIcon,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import { useStudioStore } from '../stores/studioStore.ts';
 import { ThemeToggle } from './ThemeToggle.tsx';
+import { useAuth } from '../hooks/useAuth.ts';
 
 const TopBar: React.FC = () => {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
 
   const isChatPage = location.pathname.includes('/studio/chat');
   const isImagePage = location.pathname.includes('/studio/generate/image');
@@ -43,6 +54,19 @@ const TopBar: React.FC = () => {
 
   // Placeholder image title – later will come from store/state
   const imageTitle = 'First draft';
+
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setProfileMenuAnchor(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchor(null);
+  };
+
+  const handleLogout = () => {
+    handleProfileMenuClose();
+    logout();
+  };
 
   // Breadcrumb generation logic removed as breadcrumbs are no longer displayed
 
@@ -233,20 +257,91 @@ const TopBar: React.FC = () => {
         />
 
         {/* Profile Menu */}
-        <IconButton
-          size="large"
-          color="primary"
-          sx={{
-            '&:hover': {
-              bgcolor: 'action.hover',
-            },
-            '& .MuiSvgIcon-root': {
-              fontSize: 24,
+        <Tooltip title="Profile">
+          <IconButton
+            size="large"
+            color="primary"
+            onClick={handleProfileMenuOpen}
+            sx={{
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            }}
+          >
+            {user?.profilePicture ? (
+              <Avatar
+                src={user.profilePicture}
+                alt={`${user.firstName} ${user.lastName}`}
+                sx={{ width: 32, height: 32 }}
+              />
+            ) : (
+              <AccountCircleIcon sx={{ fontSize: 24 }} />
+            )}
+          </IconButton>
+        </Tooltip>
+
+        {/* Profile Dropdown Menu */}
+        <Menu
+          anchorEl={profileMenuAnchor}
+          open={Boolean(profileMenuAnchor)}
+          onClose={handleProfileMenuClose}
+          onClick={handleProfileMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          PaperProps={{
+            elevation: 4,
+            sx: {
+              mt: 1.5,
+              minWidth: 220,
+              '& .MuiMenuItem-root': {
+                px: 2,
+                py: 1,
+              },
             },
           }}
         >
-          <AccountCircleIcon />
-        </IconButton>
+          {/* User Info */}
+          <Box sx={{ px: 2, py: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              {user?.profilePicture ? (
+                <Avatar
+                  src={user.profilePicture}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  sx={{ width: 40, height: 40 }}
+                />
+              ) : (
+                <Avatar sx={{ width: 40, height: 40 }}>
+                  <PersonIcon />
+                </Avatar>
+              )}
+              <Box>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  {user?.firstName} {user?.lastName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {user?.email}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+          
+          <Divider />
+          
+          {/* Menu Items */}
+          <MenuItem onClick={handleProfileMenuClose}>
+            <ListItemIcon>
+              <PersonIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Profile Settings</ListItemText>
+          </MenuItem>
+          
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Logout</ListItemText>
+          </MenuItem>
+        </Menu>
       </Toolbar>
     </AppBar>
   );

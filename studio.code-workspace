@@ -1,0 +1,28 @@
+{
+  "folders": [
+    {
+      "name": "Frontend",
+      "path": "./studio-frontend"
+    },
+    {
+      "name": "Backend", 
+      "path": "./studio-backend"
+    },
+    {
+      "name": "Plans & Docs",
+      "path": "./plans"
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "studio-frontend/node_modules/typescript/lib",
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.workspaceSymbols.scope": "allOpenProjects"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode"
+    ]
+  }
+} 
