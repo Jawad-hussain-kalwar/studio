@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'authentication',
+    'chat_models',
 ]
 
 MIDDLEWARE = [
@@ -187,3 +188,6 @@ FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+# Ollama integration (used by chat_models app)
+OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default='http://localhost:11434')

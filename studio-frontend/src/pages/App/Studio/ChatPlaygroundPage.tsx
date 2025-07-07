@@ -26,6 +26,10 @@ const ChatPlaygroundPage: React.FC = () => {
 
   // Handle sending a message
   const handleSendMessage = useCallback(async (messageText: string) => {
+    if (!currentModel) {
+      return; // No model available
+    }
+
     // Add user message
     addMessage({
       role: 'user',
@@ -137,10 +141,18 @@ const ChatPlaygroundPage: React.FC = () => {
         {/* Content that can scroll under the floating input */}
         <Box sx={{ flexGrow: 1, overflow: 'auto', height: '100%' }}>
           {/* Show PromptCardGrid when no messages, ChatMessageList when there are messages */}
-          {messages.length === 0 ? (
-            <PromptCardGrid onPromptSelect={handlePromptSelect} />
+          {!currentModel ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60%' }}>
+              <Box sx={{ textAlign: 'center', color: 'text.secondary' }}>
+                <p>No chat models available. Please ensure Ollama is running and models are downloaded.</p>
+              </Box>
+            </Box>
           ) : (
-            <ChatMessageList messages={messages} isLoading={isGenerating} />
+            messages.length === 0 ? (
+              <PromptCardGrid onPromptSelect={handlePromptSelect} />
+            ) : (
+              <ChatMessageList messages={messages} isLoading={isGenerating} />
+            )
           )}
         </Box>
 
@@ -149,6 +161,7 @@ const ChatPlaygroundPage: React.FC = () => {
           onSendMessage={handleSendMessage}
           isGenerating={isGenerating}
           onStop={handleStopGeneration}
+          disabled={!currentModel}
         />
       </Box>
 

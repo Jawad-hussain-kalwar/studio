@@ -4,7 +4,7 @@ import type { ChatMessage, ToolToggleState } from '../types/index.ts';
 interface StudioState {
   // Chat state
   messages: ChatMessage[];
-  currentModel: string;
+  currentModel: string | null;
   temperature: number;
   topP: number;
   tools: ToolToggleState;
@@ -18,7 +18,7 @@ interface StudioState {
   // Actions
   addMessage: (message: Omit<ChatMessage, 'id' | 'createdAt'>) => void;
   updateLastMessage: (content: string, error?: boolean) => void;
-  setCurrentModel: (model: string) => void;
+  setCurrentModel: (model: string | null) => void;
   setTemperature: (temperature: number) => void;
   setTopP: (topP: number) => void;
   toggleTool: (toolName: string) => void;
@@ -30,7 +30,7 @@ interface StudioState {
 export const useStudioStore = create<StudioState>((set) => ({
   // Initial state
   messages: [],
-  currentModel: 'gemini-2.5-flash-preview-04-17',
+  currentModel: null,
   temperature: 1,
   topP: 0.95,
   tools: {

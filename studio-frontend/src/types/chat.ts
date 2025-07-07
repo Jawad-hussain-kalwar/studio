@@ -16,7 +16,7 @@ export declare interface ChatMessage {
 export declare interface ModelInfo {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   contextLength: number;
 }
 

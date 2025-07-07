@@ -23,31 +23,13 @@ import {
   ScienceOutlined as ScienceIcon,
 } from '@mui/icons-material';
 import { useStudioStore } from '../../stores/studioStore';
+import { useModels } from '../../hooks/useChatApi';
 
 interface RunSettingsPanelProps {
   // Remove open and onClose props since it's now permanent
 }
 
 const PANEL_WIDTH = 320;
-
-// Mock model data
-const availableModels = [
-  {
-    id: 'gemini-2.5-flash-preview-04-17',
-    name: 'Gemini 2.5 Flash Preview 04-17',
-    description: 'Latest preview model with enhanced capabilities',
-  },
-  {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    description: 'Advanced reasoning and long context',
-  },
-  {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    description: 'Fast and efficient for most tasks',
-  },
-];
 
 const toolDefinitions = [
   { key: 'url-context', label: 'URL context', description: 'Fetch information from web links' },
@@ -72,6 +54,16 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
     toggleTool,
   } = useStudioStore();
 
+  // Fetch available models from backend
+  const { data: availableModels = [], isLoading: modelsLoading, refetch: refetchModels } = useModels();
+
+  // Auto-select first model when models load and no model is selected
+  useEffect(() => {
+    if (!modelsLoading && availableModels.length > 0 && !currentModel) {
+      setCurrentModel(availableModels[0].id);
+    }
+  }, [availableModels, modelsLoading, currentModel, setCurrentModel]);
+
   // Local state for smooth slider interaction
   const [localTemperature, setLocalTemperature] = useState(temperature);
   // Local state for text input
@@ -84,6 +76,11 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
   }, [temperature]);
 
   const enabledToolsCount = Object.values(tools).filter(Boolean).length;
+
+  // Handle dropdown open to refetch models
+  const handleModelDropdownOpen = () => {
+    refetchModels();
+  };
 
   return (
     <Box
@@ -128,9 +125,11 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
             <FormControl fullWidth>
               <InputLabel>Model</InputLabel>
               <Select
-                value={currentModel}
+                value={currentModel || ''}
                 onChange={(e) => setCurrentModel(e.target.value)}
                 label="Model"
+                disabled={modelsLoading || availableModels.length === 0}
+                onOpen={handleModelDropdownOpen}
               >
                 {availableModels.map((model) => (
                   <MenuItem key={model.id} value={model.id}>
@@ -138,15 +137,26 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
                       <Typography variant="body2" fontWeight={500}>
                         {model.name}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {model.description}
-                      </Typography>
+                      {model.description && (
+                        <Typography variant="caption" color="text.secondary">
+                          {model.description}
+                        </Typography>
+                      )}
                     </Box>
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Box>
+
+          {/* No models alert */}
+          {(!modelsLoading && availableModels.length === 0) && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="error">
+                Ollama is not running or no chat models are available.
+              </Typography>
+            </Box>
+          )}
 
           {/* Token Count Display */}
           <Box
