@@ -4,10 +4,15 @@ import base64
 from urllib.parse import urlencode
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from google.auth.transport import requests
 from google.oauth2 import id_token
@@ -175,3 +180,129 @@ def google_oauth_callback(request):
 def health_check(request):
     """Simple health check endpoint"""
     return JsonResponse({'status': 'ok', 'message': 'Auth service is running'})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def email_login(request):
+    """Handle email/password login"""
+    try:
+        email = request.data.get('email', '').strip().lower()
+        password = request.data.get('password', '')
+        
+        if not email or not password:
+            return Response(
+                {'error': 'Email and password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Authenticate user
+        user = authenticate(request, username=email, password=password)
+        if not user:
+            return Response(
+                {'error': 'Invalid credentials'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        if not user.is_active:
+            return Response(
+                {'error': 'Account is disabled'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Generate JWT token
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        
+        # Serialize user data
+        user_data = UserSerializer(user).data
+        
+        return Response({
+            'access': access_token,
+            'user': user_data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        print(f"Email login error: {str(e)}")
+        return Response(
+            {'error': 'Authentication failed'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def email_register(request):
+    """Handle email/password registration"""
+    try:
+        name = request.data.get('name', '').strip()
+        email = request.data.get('email', '').strip().lower()
+        password = request.data.get('password', '')
+        
+        # Validation
+        errors = {}
+        
+        if not name:
+            errors['name'] = ['Name is required']
+        elif len(name) < 2:
+            errors['name'] = ['Name must be at least 2 characters']
+        
+        if not email:
+            errors['email'] = ['Email is required']
+        elif User.objects.filter(email=email).exists():
+            errors['email'] = ['Email already exists']
+        
+        if not password:
+            errors['password'] = ['Password is required']
+        else:
+            try:
+                validate_password(password)
+            except ValidationError as e:
+                errors['password'] = list(e.messages)
+        
+        if errors:
+            return Response(
+                {'error': 'Validation failed', 'details': errors}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Split name into first_name and last_name
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        
+        # Create user
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name
+        )
+        
+        # Create user profile for email authentication
+        UserProfile.objects.create(
+            user=user,
+            oauth_provider='email',
+            oauth_id=None,  # No OAuth ID for email users
+            profile_picture=None
+        )
+        
+        # Generate JWT token
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        
+        # Serialize user data
+        user_data = UserSerializer(user).data
+        
+        return Response({
+            'access': access_token,
+            'user': user_data
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        print(f"Email registration error: {str(e)}")
+        return Response(
+            {'error': 'Registration failed'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

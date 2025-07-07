@@ -121,7 +121,8 @@ This SignUp component expects the following backend implementation:
 */
 
 import { Box, Button, Stack, TextField, Typography, Alert } from "@mui/material";
-import { Link as RouterLink, useSearchParams } from "react-router-dom";
+import { Link as RouterLink, useSearchParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import GoogleOutlined from "@mui/icons-material/Google";
 import AppleOutlined from "@mui/icons-material/Apple";
 import { useThemeBackground, useGlassStyles } from "../../components/themeHelpers.tsx";
@@ -129,13 +130,79 @@ import { ThemeToggle } from "../../components/ThemeToggle";
 
 const SignUp = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const error = searchParams.get('error');
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string[]}>({});
   
   const backgroundImage = useThemeBackground(
     "/assets/img/ui/blob1-ul.jpg",
     "/assets/img/ui/blob1-ud.jpg"
   );
   const glassStyles = useGlassStyles();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear errors when user starts typing
+    if (formError) setFormError('');
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: []
+      }));
+    }
+  };
+
+  const handleEmailSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setFormError('');
+    setFieldErrors({});
+
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token and user data
+        localStorage.setItem('auth_token', data.access);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
+        
+        // Redirect to app
+        navigate('/app/studio/chat');
+      } else {
+        if (data.details) {
+          setFieldErrors(data.details);
+        } else {
+          setFormError(data.error || 'Registration failed');
+        }
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setFormError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleOAuth = () => {
     // Redirect to backend Google OAuth endpoint
@@ -217,7 +284,7 @@ const SignUp = () => {
           </Box>
 
           {/* Error Alert */}
-          {error && (
+          {(error || formError) && (
             <Alert 
               severity="error" 
               sx={{ 
@@ -229,7 +296,7 @@ const SignUp = () => {
                 }
               }}
             >
-              {decodeURIComponent(error)}
+              {formError || decodeURIComponent(error || '')}
             </Alert>
           )}
 
@@ -309,11 +376,17 @@ const SignUp = () => {
             Continue with email
           </Typography>
 
-          <Stack spacing={1.5} component="form">
+          <Stack spacing={1.5} component="form" onSubmit={handleEmailSignUp}>
             <TextField
               label="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
               fullWidth
               variant="outlined"
+              disabled={isLoading}
+              error={!!(fieldErrors.name && fieldErrors.name.length > 0)}
+              helperText={fieldErrors.name && fieldErrors.name[0]}
               sx={{
                 "& .MuiInputBase-root": {
                   height: 56,
@@ -338,13 +411,20 @@ const SignUp = () => {
                 },
                 "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" },
                 "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
+                "& .MuiFormHelperText-root": { color: "#ff6b6b" },
               }}
             />
             <TextField
               label="Email"
+              name="email"
               type="email"
+              value={formData.email}
+              onChange={handleInputChange}
               fullWidth
               variant="outlined"
+              disabled={isLoading}
+              error={!!(fieldErrors.email && fieldErrors.email.length > 0)}
+              helperText={fieldErrors.email && fieldErrors.email[0]}
               sx={{
                 "& .MuiInputBase-root": {
                   height: 56,
@@ -369,13 +449,20 @@ const SignUp = () => {
                 },
                 "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" },
                 "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
+                "& .MuiFormHelperText-root": { color: "#ff6b6b" },
               }}
             />
             <TextField
               label="Password"
+              name="password"
               type="password"
+              value={formData.password}
+              onChange={handleInputChange}
               fullWidth
               variant="outlined"
+              disabled={isLoading}
+              error={!!(fieldErrors.password && fieldErrors.password.length > 0)}
+              helperText={fieldErrors.password && fieldErrors.password[0]}
               sx={{
                 "& .MuiInputBase-root": {
                   height: 56,
@@ -400,12 +487,15 @@ const SignUp = () => {
                 },
                 "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" },
                 "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.3)" },
+                "& .MuiFormHelperText-root": { color: "#ff6b6b" },
               }}
             />
             <Button
+              type="submit"
               variant="contained"
               color="primary"
               fullWidth
+              disabled={isLoading}
               sx={{
                 height: 56,
                 mb: 1.5,
@@ -415,7 +505,7 @@ const SignUp = () => {
                 paddingRight: "20px",
               }}
             >
-              Create account
+              {isLoading ? 'Creating account...' : 'Create account'}
             </Button>
           </Stack>
 

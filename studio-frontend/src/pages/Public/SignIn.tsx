@@ -95,7 +95,8 @@ This SignIn component expects the following backend implementation:
 */
 
 import { Box, Button, Stack, TextField, Typography, Alert } from "@mui/material";
-import { Link as RouterLink, useSearchParams } from "react-router-dom";
+import { Link as RouterLink, useSearchParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import GoogleOutlined from "@mui/icons-material/Google";
 import AppleOutlined from "@mui/icons-material/Apple";
 import { useThemeBackground, useGlassStyles } from "../../components/themeHelpers.tsx";
@@ -103,13 +104,66 @@ import { ThemeToggle } from "../../components/ThemeToggle";
 
 const SignIn = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const error = searchParams.get('error');
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState('');
   
   const backgroundImage = useThemeBackground(
     "/assets/img/ui/blob1-ul.jpg",
     "/assets/img/ui/blob1-ud.jpg"
   );
   const glassStyles = useGlassStyles();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear form error when user starts typing
+    if (formError) setFormError('');
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setFormError('');
+
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token and user data
+        localStorage.setItem('auth_token', data.access);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
+        
+        // Redirect to app
+        navigate('/app/studio/chat');
+      } else {
+        setFormError(data.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setFormError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleOAuth = () => {
     // Redirect to backend Google OAuth endpoint
@@ -191,7 +245,7 @@ const SignIn = () => {
           </Box>
 
           {/* Error Alert */}
-          {error && (
+          {(error || formError) && (
             <Alert 
               severity="error" 
               sx={{ 
@@ -203,7 +257,7 @@ const SignIn = () => {
                 }
               }}
             >
-              {decodeURIComponent(error)}
+              {formError || decodeURIComponent(error || '')}
             </Alert>
           )}
 
@@ -283,12 +337,16 @@ const SignIn = () => {
             Continue with email
           </Typography>
 
-          <Stack spacing={1.5} component="form">
+          <Stack spacing={1.5} component="form" onSubmit={handleEmailLogin}>
             <TextField
               label="Email"
+              name="email"
               type="email"
+              value={formData.email}
+              onChange={handleInputChange}
               fullWidth
               variant="outlined"
+              disabled={isLoading}
               sx={{
                 "& .MuiInputBase-root": {
                   height: 56,
@@ -317,9 +375,13 @@ const SignIn = () => {
             />
             <TextField
               label="Password"
+              name="password"
               type="password"
+              value={formData.password}
+              onChange={handleInputChange}
               fullWidth
               variant="outlined"
+              disabled={isLoading}
               sx={{
                 "& .MuiInputBase-root": {
                   height: 56,
@@ -347,9 +409,11 @@ const SignIn = () => {
               }}
             />
             <Button
+              type="submit"
               variant="contained"
               color="primary"
               fullWidth
+              disabled={isLoading}
               sx={{
                 height: 56,
                 mb: 1.5,
@@ -359,7 +423,7 @@ const SignIn = () => {
                 paddingRight: "20px",
               }}
             >
-              Log in
+              {isLoading ? 'Logging in...' : 'Log in'}
             </Button>
           </Stack>
 

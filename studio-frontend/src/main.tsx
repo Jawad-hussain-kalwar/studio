@@ -30,25 +30,31 @@ const hideScrollbars = (element: Element) => {
 
 const handleScroll = (e: Event) => {
   const element = e.target as Element;
-  showScrollbars(element);
-  
-  clearTimeout(scrollTimeout);
-  scrollTimeout = setTimeout(() => {
-    hideScrollbars(element);
-  }, 1500); // Longer timeout for better UX
+  // Only handle scroll for valid Elements with classList
+  if (element && element.classList) {
+    showScrollbars(element);
+    
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      hideScrollbars(element);
+    }, 1500); // Longer timeout for better UX
+  }
 };
 
 const handleMouseEnter = (e: Event) => {
   const element = e.target as Element;
-  // Only show if element is scrollable
-  if (element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth) {
+  // Only show if element is a valid Element with classList and is scrollable
+  if (element && element.classList && (element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth)) {
     element.classList.add('scrollbar-hover');
   }
 };
 
 const handleMouseLeave = (e: Event) => {
   const element = e.target as Element;
-  element.classList.remove('scrollbar-hover');
+  // Only remove class if element is a valid Element with classList
+  if (element && element.classList) {
+    element.classList.remove('scrollbar-hover');
+  }
 };
 
 // Add scroll listeners to show scrollbars during active scrolling
