@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
 import { useStudioStore } from '../../../stores/studioStore';
 import { useStreamingChat } from '../../../hooks/useChatApi';
@@ -7,6 +7,8 @@ import ChatMessageList from '../../../components/studio/ChatMessageList';
 import ChatInputDock from '../../../components/studio/ChatInputDock';
 import RunSettingsPanel from '../../../components/studio/RunSettingsPanel';
 
+type StreamingStatus = 'idle' | 'thinking' | 'streaming';
+
 const ChatPlaygroundPage: React.FC = () => {
   const {
     messages,
@@ -14,21 +16,34 @@ const ChatPlaygroundPage: React.FC = () => {
     temperature,
     topP,
     tools,
-    isGenerating,
     addMessage,
     updateLastMessage,
-    setIsGenerating,
     setTokenCount,
   } = useStudioStore();
 
   const [currentStreamingContent, setCurrentStreamingContent] = useState('');
+  const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>('idle');
   const streamingMutation = useStreamingChat();
+  const requestIdRef = useRef(0);
+
+  // Derived state for backwards compatibility
+  const isGenerating = streamingStatus !== 'idle';
+
+  // Update the last message when streaming content changes
+  useEffect(() => {
+    if (currentStreamingContent && streamingStatus === 'streaming') {
+      updateLastMessage(currentStreamingContent);
+    }
+  }, [currentStreamingContent, streamingStatus, updateLastMessage]);
 
   // Handle sending a message
   const handleSendMessage = useCallback(async (messageText: string) => {
     if (!currentModel) {
       return; // No model available
     }
+
+    // Increment request ID to handle overlapping requests
+    const currentRequestId = ++requestIdRef.current;
 
     // Add user message
     addMessage({
@@ -42,7 +57,8 @@ const ChatPlaygroundPage: React.FC = () => {
       content: '',
     });
 
-    setIsGenerating(true);
+    // Set to thinking immediately when request starts
+    setStreamingStatus('thinking');
     setCurrentStreamingContent('');
 
     try {
@@ -62,6 +78,8 @@ const ChatPlaygroundPage: React.FC = () => {
         .filter(([_, enabled]) => enabled)
         .map(([toolName, _]) => toolName);
 
+      let isFirstChunk = true;
+
       await streamingMutation.mutateAsync({
         model: currentModel,
         messages: requestMessages,
@@ -70,28 +88,41 @@ const ChatPlaygroundPage: React.FC = () => {
         tools: enabledTools,
         stream: true,
         onChunk: (chunk: string) => {
-          setCurrentStreamingContent(prev => {
-            const newContent = prev + chunk;
-            updateLastMessage(newContent);
-            return newContent;
-          });
+          // Only process if this is still the current request
+          if (currentRequestId !== requestIdRef.current) return;
+
+          // Switch to streaming on first chunk
+          if (isFirstChunk) {
+            isFirstChunk = false;
+            setStreamingStatus('streaming');
+          }
+
+          setCurrentStreamingContent(prev => prev + chunk);
         },
       });
 
-      // Mock token count update (would come from API in real implementation)
-      setTokenCount({
-        prompt: Math.floor(messageText.length / 4),
-        completion: Math.floor(currentStreamingContent.length / 4),
-        total: Math.floor((messageText.length + currentStreamingContent.length) / 4),
-      });
+      // Only finalize if this is still the current request
+      if (currentRequestId === requestIdRef.current) {
+        // Mock token count update (would come from API in real implementation)
+        setTokenCount({
+          prompt: Math.floor(messageText.length / 4),
+          completion: Math.floor(currentStreamingContent.length / 4),
+          total: Math.floor((messageText.length + currentStreamingContent.length) / 4),
+        });
+      }
 
     } catch (error) {
       console.error('Chat error:', error);
-      // Mark the placeholder assistant message as an error and update its content
-      updateLastMessage('Sorry, I encountered an error while processing your request. Please try again.', true);
+      // Only handle error if this is still the current request
+      if (currentRequestId === requestIdRef.current) {
+        updateLastMessage('Sorry, I encountered an error while processing your request. Please try again.', true);
+      }
     } finally {
-      setIsGenerating(false);
-      setCurrentStreamingContent('');
+      // Only reset if this is still the current request
+      if (currentRequestId === requestIdRef.current) {
+        setStreamingStatus('idle');
+        setCurrentStreamingContent('');
+      }
     }
   }, [
     messages,
@@ -101,7 +132,6 @@ const ChatPlaygroundPage: React.FC = () => {
     tools,
     addMessage,
     updateLastMessage,
-    setIsGenerating,
     setTokenCount,
     streamingMutation,
     currentStreamingContent,
@@ -114,9 +144,10 @@ const ChatPlaygroundPage: React.FC = () => {
 
   // Handle stopping generation
   const handleStopGeneration = useCallback(() => {
-    setIsGenerating(false);
+    setStreamingStatus('idle');
+    setCurrentStreamingContent('');
     // In a real implementation, you would cancel the stream request here
-  }, [setIsGenerating]);
+  }, []);
 
   return (
     <Box
@@ -151,7 +182,10 @@ const ChatPlaygroundPage: React.FC = () => {
             messages.length === 0 ? (
               <PromptCardGrid onPromptSelect={handlePromptSelect} />
             ) : (
-              <ChatMessageList messages={messages} isLoading={isGenerating} />
+              <ChatMessageList 
+                messages={messages} 
+                isLoading={streamingStatus === 'thinking'} 
+              />
             )
           )}
         </Box>
