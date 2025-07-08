@@ -13,6 +13,7 @@ interface StudioState {
     prompt: number;
     completion: number;
     total: number;
+    contextLength: number;
   };
   
   // Actions
@@ -23,8 +24,10 @@ interface StudioState {
   setTopP: (topP: number) => void;
   toggleTool: (toolName: string) => void;
   setIsGenerating: (isGenerating: boolean) => void;
-  setTokenCount: (tokenCount: { prompt: number; completion: number; total: number }) => void;
+  setTokenCount: (tokenCount: { prompt: number; completion: number; total: number; contextLength?: number }) => void;
   clearMessages: () => void;
+  setTools: (tools: ToolToggleState) => void;
+  setContextLength: (contextLength: number) => void;
 }
 
 export const useStudioStore = create<StudioState>((set) => ({
@@ -41,12 +44,14 @@ export const useStudioStore = create<StudioState>((set) => ({
     'grounding-google-search': false,
     'function-calling': false,
     'code-execution': false,
+    vision: false,
   },
   isGenerating: false,
   tokenCount: {
     prompt: 0,
     completion: 0,
     total: 0,
+    contextLength: 1048576,
   },
 
   // Actions
@@ -87,10 +92,19 @@ export const useStudioStore = create<StudioState>((set) => ({
       [toolName]: !state.tools[toolName],
     },
   })),
-  
+
+  setTools: (tools) => set({ tools }),
+
+  setContextLength: (contextLength) => set((state) => ({
+    tokenCount: {
+      ...state.tokenCount,
+      contextLength,
+    },
+  })),
+
   setIsGenerating: (isGenerating) => set({ isGenerating }),
   
-  setTokenCount: (tokenCount) => set({ tokenCount }),
+  setTokenCount: (tokenCount) => set((state) => ({ tokenCount: { ...state.tokenCount, ...tokenCount } })),
   
   clearMessages: () => set({ 
     messages: [],

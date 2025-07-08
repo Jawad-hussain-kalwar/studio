@@ -10,6 +10,48 @@ export const useModels = () => {
       const response = await http.get('/v1/models/');
       return response.data;
     },
+    /* Transform raw backend data into rich ModelInfo objects with derived UI helpers. */
+    select: (data: ModelInfo[]): ModelInfo[] => {
+      return data.map((model) => {
+        const metadata: any = (model as any).metadata ?? {};
+
+        // --- Compute contextLength ---
+        let contextLength: number | undefined = undefined;
+        if (metadata?.details?.context_length && typeof metadata.details.context_length === 'number') {
+          contextLength = metadata.details.context_length;
+        } else if (metadata?.model_info) {
+          for (const [key, value] of Object.entries(metadata.model_info)) {
+            if (key.endsWith('.context_length') && typeof value === 'number') {
+              contextLength = value as number;
+              break;
+            }
+          }
+        }
+
+        // --- Compute capabilities array ---
+        const capabilities: string[] = Array.isArray(metadata.capabilities)
+          ? (metadata.capabilities as unknown[]).map(String)
+          : [];
+
+        // --- Compute displayLabel ---
+        const details = metadata?.details ?? {};
+        const displayLabelParts: string[] = [];
+        if (details.family) displayLabelParts.push(String(details.family));
+        if (details.format) displayLabelParts.push(String(details.format).toUpperCase());
+        if (details.parameter_size) displayLabelParts.push(String(details.parameter_size));
+        if (details.quantization_level) displayLabelParts.push(String(details.quantization_level));
+        const displayLabel = displayLabelParts.join(' ');
+
+        return {
+          ...model,
+          metadata,
+          parameterSize: (model as any).parameterSize ?? details.parameter_size,
+          contextLength: contextLength ?? model.contextLength,
+          capabilities,
+          displayLabel,
+        } as ModelInfo;
+      });
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
     refetchOnWindowFocus: false, // Don't refetch when window regains focus

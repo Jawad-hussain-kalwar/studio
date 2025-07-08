@@ -31,14 +31,12 @@ interface RunSettingsPanelProps {
 
 const PANEL_WIDTH = 320;
 
-const toolDefinitions = [
-  { key: 'url-context', label: 'URL context', description: 'Fetch information from web links' },
-  { key: 'speech-generation', label: 'Native speech generation', description: 'Text to speech conversion' },
-  { key: 'audio-dialog', label: 'Live audio-to-audio dialog', description: 'Real-time audio conversations' },
-  { key: 'image-generation', label: 'Native image generation', description: 'Text to image creation' },
-  { key: 'grounding-google-search', label: 'Grounding with Google Search', description: 'Enhanced responses with search' },
-  { key: 'function-calling', label: 'Function calling', description: 'Execute custom functions' },
-  { key: 'code-execution', label: 'Code execution', description: 'Run and execute code' },
+// Core tool definitions (non-placeholder)
+const BASE_TOOL_DEFS = [
+  { key: 'url-context', label: 'URL context', description: 'Fetch information from web links', requiresToolsCapability: true },
+  { key: 'grounding-google-search', label: 'Grounding with Google Search', description: 'Enhanced responses with search', requiresToolsCapability: true },
+  { key: 'function-calling', label: 'Function calling', description: 'Execute custom functions', requiresToolsCapability: true },
+  { key: 'code-execution', label: 'Code execution', description: 'Run and execute code', requiresToolsCapability: true },
 ];
 
 const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
@@ -52,10 +50,27 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
     setTemperature,
     setTopP,
     toggleTool,
+    setTools,
+    setContextLength,
   } = useStudioStore();
 
   // Fetch available models from backend
-  const { data: availableModels = [], isLoading: modelsLoading, refetch: refetchModels } = useModels();
+  const { data: availableModels = [], isLoading: modelsLoading } = useModels();
+
+  // Resolve the currently selected model object for capability checks
+  const selectedModel = availableModels.find((m) => m.id === currentModel);
+
+  // Derived: does the model support generic "tools" capability?
+  const toolsCapable = selectedModel?.capabilities?.includes('tools') ?? false;
+
+  // Build runtime tool definition list, adding Vision toggle only when supported
+  const toolDefinitions = React.useMemo(() => {
+    const defs = [...BASE_TOOL_DEFS];
+    if (selectedModel?.capabilities?.includes('vision')) {
+      defs.push({ key: 'vision', label: 'Vision', description: 'Enable image understanding', requiresToolsCapability: false });
+    }
+    return defs;
+  }, [selectedModel]);
 
   // Auto-select first model when models load and no model is selected
   useEffect(() => {
@@ -63,6 +78,30 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
       setCurrentModel(availableModels[0].id);
     }
   }, [availableModels, modelsLoading, currentModel, setCurrentModel]);
+
+  // Effect to reset tools and context length when selectedModel changes
+  useEffect(() => {
+    if (selectedModel?.contextLength) {
+      setContextLength(selectedModel.contextLength);
+    }
+
+    // Reset enabled tools to allowed set
+    if (selectedModel) {
+      const allowedTools: string[] = [];
+      if (selectedModel.capabilities?.includes('tools')) {
+        allowedTools.push('url-context', 'grounding-google-search', 'function-calling', 'code-execution');
+      }
+      if (selectedModel.capabilities?.includes('vision')) {
+        allowedTools.push('vision');
+      }
+      const newToolsState: any = {};
+      // Loop over all tool keys in current state
+      Object.keys(tools).forEach((key) => {
+        newToolsState[key] = allowedTools.includes(key) ? tools[key] : false;
+      });
+      setTools(newToolsState);
+    }
+  }, [selectedModel]);
 
   // Local state for smooth slider interaction
   const [localTemperature, setLocalTemperature] = useState(temperature);
@@ -77,10 +116,12 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
 
   const enabledToolsCount = Object.values(tools).filter(Boolean).length;
 
-  // Handle dropdown open to refetch models
-  const handleModelDropdownOpen = () => {
-    refetchModels();
-  };
+  /*
+   * We used to refetch models every time the dropdown opened. Now that the
+   * backend list call is lightweight and React-Query already refetches when
+   * the cache becomes stale (5 min), the extra manual refetch is unnecessary
+   * network noise, so we removed it.
+   */
 
   return (
     <Box
@@ -129,7 +170,7 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
                 onChange={(e) => setCurrentModel(e.target.value)}
                 label="Model"
                 disabled={modelsLoading || availableModels.length === 0}
-                onOpen={handleModelDropdownOpen}
+                // Removed onOpen refetch; rely on React-Query’s staleTime
               >
                 {availableModels.map((model) => (
                   <MenuItem key={model.id} value={model.id}>
@@ -173,7 +214,9 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
               Token count
             </Typography>
             <Typography variant="h6" color="primary">
-              {tokenCount.total.toLocaleString()} / 1,048,576
+              {tokenCount.total.toLocaleString()} / {(
+                selectedModel?.contextLength ?? 1048576
+              ).toLocaleString()}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
               <Typography variant="caption" color="text.secondary">
@@ -321,6 +364,7 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
                     <Switch
                       checked={tools[tool.key] || false}
                       onChange={() => toggleTool(tool.key)}
+                      disabled={tool.requiresToolsCapability ? !toolsCapable : false}
                       size="small"
                       sx={{
                         '& .MuiSwitch-switchBase.Mui-checked': {

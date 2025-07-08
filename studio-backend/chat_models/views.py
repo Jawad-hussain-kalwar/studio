@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from .services import get_chat_models
 from .ollama_client import OllamaClient, OllamaError, OllamaConnectionError, OllamaModelError
 from .streaming import create_chat_stream_response
 from .validators import ChatRequestValidator, ResponseFormatter
@@ -21,19 +20,25 @@ logger = logging.getLogger(__name__)
 
 
 class ChatModelList(APIView):
-    """Return the list of chat-completion models available in Ollama."""
+    """Return the list of chat-completion models available in Ollama.
+
+    Uses the shared OllamaClient wrapper so we don’t duplicate HTTP logic and we
+    always benefit from whatever metadata that helper exposes (description,
+    contextLength when available, etc.).
+    """
 
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         try:
-            models = get_chat_models()
+            client = OllamaClient()
+            models = client.get_available_models()
             return Response(models)
         except Exception as e:
             logger.error(f"Error fetching models: {e}")
             return Response(
                 {"error": "Unable to fetch models", "message": str(e)},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
 

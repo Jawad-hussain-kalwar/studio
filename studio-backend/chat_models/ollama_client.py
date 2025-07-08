@@ -32,7 +32,7 @@ class OllamaClient:
     Uses the official ollama Python library for reliable communication.
     """
     
-    def __init__(self, base_url: str = None):
+    def __init__(self, base_url: Optional[str] = None):
         self.base_url = base_url or getattr(settings, 'OLLAMA_BASE_URL', 'http://localhost:11434')
         # Create client with custom host if needed
         if self.base_url != 'http://localhost:11434':
@@ -68,12 +68,38 @@ class OllamaClient:
             models = []
             
             for model in models_response.get("models", []):
-                models.append({
-                    "id": model["name"],
-                    "name": model["name"],
-                    "description": f"Size: {model.get('size', 'Unknown')}",
-                    "contextLength": 4096,  # Default, could be extracted from model details
-                })
+                model_id = model["name"]
+                entry = {
+                    "id": model_id,
+                    "name": model_id,
+                }
+
+                # Attach size from /list response if available
+                if model.get("size"):
+                    entry["parameterSize"] = model["size"]
+
+                # Attempt to get richer metadata via `show` for each model.
+                try:
+                    # Ensure the payload is a mutable dict so we can safely mutate it below.
+                    show_payload = dict(self.client.show(model_id))
+
+                    # Drop fields we explicitly do NOT want to expose
+                    show_payload.pop("license", None)
+                    # Remove very large or unnecessary fields before sending to the frontend
+                    # `modelfile` often contains the full model recipe and can be several KBs,
+                    # while `tensors` is enormous (one entry per model weight tensor). Neither
+                    # is required by the frontend and they dramatically inflate the response.
+                    show_payload.pop("modelfile", None)
+                    show_payload.pop("tensors", None)
+                    mi = show_payload.get("model_info", {})
+                    mi.pop("digest", None)
+
+                    entry["metadata"] = show_payload
+                except Exception as e:
+                    # Non-fatal; log and continue with what we have.
+                    logger.debug(f"Unable to fetch details for {model_id}: {e}")
+
+                models.append(entry)
                 
             return models
             
@@ -97,9 +123,10 @@ class OllamaClient:
         try:
             ollama_messages = self._format_messages_for_ollama(messages)
             
-            response = self.client.chat(
+            # Type ignore: Ollama library expects its own Message sequence; our dict list is accepted at runtime.
+            response = self.client.chat(  # type: ignore
                 model=model,
-                messages=ollama_messages,
+                messages=ollama_messages,  # type: ignore[arg-type]
                 options={
                     "temperature": temperature,
                     "top_p": top_p,
@@ -136,9 +163,10 @@ class OllamaClient:
         try:
             ollama_messages = self._format_messages_for_ollama(messages)
             
-            stream = self.client.chat(
+            # Type ignore for same reason as above.
+            stream = self.client.chat(  # type: ignore
                 model=model,
-                messages=ollama_messages,
+                messages=ollama_messages,  # type: ignore[arg-type]
                 stream=True,
                 options={
                     "temperature": temperature,

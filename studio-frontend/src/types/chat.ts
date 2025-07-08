@@ -17,7 +17,16 @@ export declare interface ModelInfo {
   id: string;
   name: string;
   description?: string;
-  contextLength: number;
+  /** Raw parameter size (e.g. "1.7B" or number of parameters) */
+  parameterSize?: string | number;
+  /** Backend metadata blob returned by /v1/models – architecture-specific */
+  metadata?: Record<string, unknown>;
+  /** Computed: maximum context length (tokens) supported by the model */
+  contextLength?: number;
+  /** Computed: array of capability strings such as "vision", "tools" */
+  capabilities?: string[];
+  /** Computed: human-friendly label for dropdowns like "llama GGUF 1.7B Q8_0" */
+  displayLabel?: string;
 }
 
 export declare interface ToolToggleState {
