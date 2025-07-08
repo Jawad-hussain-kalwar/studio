@@ -38,9 +38,6 @@ export const useStudioStore = create<StudioState>((set) => ({
   topP: 0.95,
   tools: {
     'url-context': false,
-    'speech-generation': false,
-    'audio-dialog': false,
-    'image-generation': false,
     'grounding-google-search': false,
     'function-calling': false,
     'code-execution': false,

@@ -104,9 +104,9 @@ def google_oauth_callback(request):
         # Verify and decode the ID token
         credentials = flow.credentials
         id_info = id_token.verify_oauth2_token(
-            credentials.id_token, 
-            requests.Request(), 
-            settings.GOOGLE_OAUTH_CLIENT_ID
+            getattr(credentials, "id_token"),  # type: ignore[attr-defined]
+            requests.Request(),
+            settings.GOOGLE_OAUTH_CLIENT_ID,
         )
         
         print(f"ID token verified. User info: {id_info.get('email', 'No email')}")
@@ -150,7 +150,7 @@ def google_oauth_callback(request):
         print("Generating JWT token...")
         # Generate JWT token
         refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+        access_token = str(getattr(refresh, "access_token"))  # type: ignore[attr-defined]
         
         print("Serializing user data...")
         # Serialize user data
@@ -212,7 +212,7 @@ def email_login(request):
         
         # Generate JWT token
         refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+        access_token = str(getattr(refresh, "access_token"))  # type: ignore[attr-defined]
         
         # Serialize user data
         user_data = UserSerializer(user).data
@@ -290,7 +290,7 @@ def email_register(request):
         
         # Generate JWT token
         refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+        access_token = str(getattr(refresh, "access_token"))  # type: ignore[attr-defined]
         
         # Serialize user data
         user_data = UserSerializer(user).data

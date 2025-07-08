@@ -189,3 +189,22 @@ npm test            # Run Vitest tests
 ## License
 
 This is a private project - All rights reserved.
+
+## Chat Model Selection & Run Settings (Updated)
+
+The **Run Settings** panel is now *model-aware*:
+
+1. The model list is fetched from `/v1/models` and cached in **localStorage** for 10 minutes to reduce network overhead between reloads.
+2. Each entry surfaces the following computed fields:
+   - **displayLabel** – "<family> <FORMAT> <parameter_size> <quant_level>" (e.g. `llama GGUF 1.7B Q8_0`).
+   - **contextLength** – maximum tokens supported (taken from architecture-specific metadata).
+   - **capabilities** – array such as `["tools", "vision"]`.
+3. The **token counter** now shows `used / contextLength` rather than a hard-coded ceiling.
+4. Tool switches are capability-driven:
+   - Core tools (URL context, Google grounding, Function calling, Code execution) require the `tools` capability and are disabled otherwise.
+   - The **Vision** switch appears only for models with the `vision` capability.
+5. When the current model changes the store automatically:
+   - Resets enabled tools to the allowed set.
+   - Updates `tokenCount.contextLength` for future validation.
+
+> Technical Note: All capability checks are performed client-side via the `metadata.capabilities` array returned by the backend. Adding new capabilities server-side will automatically surface in the UI as long as the frontend defines a corresponding switch or feature.

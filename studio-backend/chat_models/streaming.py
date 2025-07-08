@@ -3,7 +3,7 @@ Server-Sent Events (SSE) utilities for streaming chat responses.
 """
 import json
 import logging
-from typing import Iterator, Dict, Any
+from typing import Iterator, Dict, Any, Optional
 from django.http import StreamingHttpResponse
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class SSEFormatter:
         return f"data: {json_data}\n\n"
     
     @staticmethod
-    def format_event(event_type: str, data: Dict[str, Any] = None) -> str:
+    def format_event(event_type: str, data: Optional[Dict[str, Any]] = None) -> str:
         """
         Format a complete SSE event with type and optional data.
         
@@ -40,7 +40,7 @@ class SSEFormatter:
         """
         lines = [f"event: {event_type}"]
         
-        if data:
+        if data is not None:
             json_data = json.dumps(data, ensure_ascii=False)
             lines.append(f"data: {json_data}")
         
@@ -93,22 +93,22 @@ def create_sse_response(
         """Generator that formats data as SSE and handles errors gracefully."""
         try:
             # Send initial connection established event
-            yield SSEFormatter.format_event("connected", {"status": "ready"})
+            yield SSEFormatter.format_event("connected", {"status": "ready"}).encode("utf-8")
             
             # Stream the actual data
             for chunk in stream_generator:
                 if chunk:
-                    yield SSEFormatter.format_data(chunk)
+                    yield SSEFormatter.format_data(chunk).encode("utf-8")
                     
             # Send completion signal
-            yield SSEFormatter.format_done()
+            yield SSEFormatter.format_done().encode("utf-8")
             
         except Exception as e:
             logger.error(f"Error in SSE stream: {e}")
             yield SSEFormatter.format_error(
                 error_message="An error occurred while streaming the response",
                 error_code="streaming_error"
-            )
+            ).encode("utf-8")
         finally:
             # Ensure stream is properly closed
             logger.info("SSE stream completed")
@@ -148,24 +148,28 @@ def create_chat_stream_response(ollama_stream: Iterator[Dict[str, Any]]) -> Stre
                     if 'usage' in chunk:
                         total_tokens = chunk['usage'].get('totalTokens', total_tokens)
                     
-                    yield SSEFormatter.format_data(chunk)
+                    yield chunk  # yield raw dict; formatted in create_sse_response
                     
-            # Send final done message
-            yield SSEFormatter.format_done()
+            # Done signal will be appended by create_sse_response
             
             logger.info(f"Chat stream completed. Total tokens: {total_tokens}")
             
         except Exception as e:
             logger.error(f"Error in chat stream: {e}")
-            
-            # Send user-friendly error message
+
             error_message = "Sorry, I encountered an error while generating the response. Please try again."
             if "connection" in str(e).lower():
                 error_message = "Unable to connect to the AI service. Please check if Ollama is running."
             elif "model" in str(e).lower():
                 error_message = "The selected model is not available. Please try a different model."
-                
-            yield SSEFormatter.format_error(error_message, "chat_error")
+
+            yield {
+                "error": {
+                    "message": error_message,
+                    "code": "chat_error",
+                    "type": "server_error",
+                }
+            }
     
     return create_sse_response(chat_event_stream())
 

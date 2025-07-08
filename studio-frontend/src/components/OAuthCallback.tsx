@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 interface OAuthCallbackProps {
-  onAuthSuccess?: (token: string, user: any) => void;
+  onAuthSuccess?: (token: string, user: import('../types').User) => void;
 }
 
 const OAuthCallback: React.FC<OAuthCallbackProps> = ({ onAuthSuccess }) => {

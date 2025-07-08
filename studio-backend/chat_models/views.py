@@ -107,11 +107,11 @@ class ChatCompletionView(APIView):
                                 top_p=cleaned_data.get('top_p', 0.9)
                             ):
                                 logger.info(f"Stream chunk: {chunk}")
-                                # Format as SSE
-                                yield f"data: {json.dumps(chunk)}\n\n"
+                                # Format as SSE (bytes)
+                                yield f"data: {json.dumps(chunk)}\n\n".encode("utf-8")
                                 
                             # Send done signal
-                            yield "data: [DONE]\n\n"
+                            yield b"data: [DONE]\n\n"
                             
                         except Exception as e:
                             logger.error(f"Stream generation error: {e}")
@@ -119,7 +119,7 @@ class ChatCompletionView(APIView):
                                 "error": str(e),
                                 "type": "stream_error"
                             }
-                            yield f"data: {json.dumps(error_chunk)}\n\n"
+                            yield f"data: {json.dumps(error_chunk)}\n\n".encode("utf-8")
                     
                     response = StreamingHttpResponse(
                         stream_generator(),

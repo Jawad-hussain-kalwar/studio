@@ -7,20 +7,44 @@ export const useModels = () => {
   return useQuery({
     queryKey: ['models'],
     queryFn: async (): Promise<ModelInfo[]> => {
-      const response = await http.get('/v1/models/');
-      return response.data;
+      const cacheKey = 'models_cache_v1';
+      try {
+        const response = await http.get('/v1/models/');
+        const models: ModelInfo[] = response.data;
+        // Save to localStorage with timestamp
+        localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: models }));
+        return models;
+      } catch (err) {
+        // On network failure, attempt to use cache if valid
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            const age = Date.now() - parsed.ts;
+            if (age < 10 * 60 * 1000) {
+              return parsed.data as ModelInfo[];
+            }
+          } catch (_) {
+            /* fallthrough */
+          }
+        }
+        throw err; // rethrow if no valid cache
+      }
     },
     /* Transform raw backend data into rich ModelInfo objects with derived UI helpers. */
     select: (data: ModelInfo[]): ModelInfo[] => {
       return data.map((model) => {
-        const metadata: any = (model as any).metadata ?? {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const metadata: Record<string, unknown> = (model as any).metadata ?? {};
 
         // --- Compute contextLength ---
         let contextLength: number | undefined = undefined;
-        if (metadata?.details?.context_length && typeof metadata.details.context_length === 'number') {
-          contextLength = metadata.details.context_length;
-        } else if (metadata?.model_info) {
-          for (const [key, value] of Object.entries(metadata.model_info)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const metaAny = metadata as any;
+        if (metaAny?.details?.context_length && typeof metaAny.details.context_length === 'number') {
+          contextLength = metaAny.details.context_length;
+        } else if (metaAny?.model_info) {
+          for (const [key, value] of Object.entries(metaAny.model_info)) {
             if (key.endsWith('.context_length') && typeof value === 'number') {
               contextLength = value as number;
               break;
@@ -34,7 +58,8 @@ export const useModels = () => {
           : [];
 
         // --- Compute displayLabel ---
-        const details = metadata?.details ?? {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const details = (metaAny?.details ?? {}) as any;
         const displayLabelParts: string[] = [];
         if (details.family) displayLabelParts.push(String(details.family));
         if (details.format) displayLabelParts.push(String(details.format).toUpperCase());
@@ -45,7 +70,8 @@ export const useModels = () => {
         return {
           ...model,
           metadata,
-          parameterSize: (model as any).parameterSize ?? details.parameter_size,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          parameterSize: (model as any).parameterSize ?? (details as any).parameter_size,
           contextLength: contextLength ?? model.contextLength,
           capabilities,
           displayLabel,

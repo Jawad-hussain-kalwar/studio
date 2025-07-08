@@ -21,13 +21,13 @@ import {
   //Close as CloseIcon,
   ExpandMoreOutlined as ExpandMoreIcon,
   ScienceOutlined as ScienceIcon,
+  InfoOutlined as InfoIcon,
 } from '@mui/icons-material';
+import { Suspense, lazy } from 'react';
 import { useStudioStore } from '../../stores/studioStore';
 import { useModels } from '../../hooks/useChatApi';
 
-interface RunSettingsPanelProps {
-  // Remove open and onClose props since it's now permanent
-}
+type RunSettingsPanelProps = Record<string, never>;
 
 const PANEL_WIDTH = 320;
 
@@ -38,6 +38,8 @@ const BASE_TOOL_DEFS = [
   { key: 'function-calling', label: 'Function calling', description: 'Execute custom functions', requiresToolsCapability: true },
   { key: 'code-execution', label: 'Code execution', description: 'Run and execute code', requiresToolsCapability: true },
 ];
+
+const LazyModelDialog = lazy(() => import('./ModelMetadataDialog'));
 
 const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
   const {
@@ -94,7 +96,7 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
       if (selectedModel.capabilities?.includes('vision')) {
         allowedTools.push('vision');
       }
-      const newToolsState: any = {};
+      const newToolsState: import('../../types').ToolToggleState = {} as import('../../types').ToolToggleState;
       // Loop over all tool keys in current state
       Object.keys(tools).forEach((key) => {
         newToolsState[key] = allowedTools.includes(key) ? tools[key] : false;
@@ -115,6 +117,8 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
   }, [temperature]);
 
   const enabledToolsCount = Object.values(tools).filter(Boolean).length;
+
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   /*
    * We used to refetch models every time the dropdown opened. Now that the
@@ -174,14 +178,19 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
               >
                 {availableModels.map((model) => (
                   <MenuItem key={model.id} value={model.id}>
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>
-                        {model.name}
-                      </Typography>
-                      {model.description && (
-                        <Typography variant="caption" color="text.secondary">
-                          {model.description}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Box>
+                        <Typography variant="body2" fontWeight={500}>
+                          {model.displayLabel || model.name}
                         </Typography>
+                        {model.description && (
+                          <Typography variant="caption" color="text.secondary">
+                            {model.description}
+                          </Typography>
+                        )}
+                      </Box>
+                      {model.id === currentModel && (
+                        <InfoIcon fontSize="small" sx={{ ml: 1, cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setDetailsOpen(true); }} />
                       )}
                     </Box>
                   </MenuItem>
@@ -450,6 +459,10 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
           </Accordion>
         </Box>
       </Box>
+      {/* Lazy-loaded model details dialog */}
+      <Suspense fallback={null}>
+        <LazyModelDialog open={detailsOpen} onClose={() => setDetailsOpen(false)} model={selectedModel} />
+      </Suspense>
     </Box>
   );
 };
