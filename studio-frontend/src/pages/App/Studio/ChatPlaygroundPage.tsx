@@ -80,7 +80,7 @@ const ChatPlaygroundPage: React.FC = () => {
 
       let isFirstChunk = true;
 
-      await streamingMutation.mutateAsync({
+      const usage = await streamingMutation.mutateAsync({
         model: currentModel,
         messages: requestMessages,
         temperature,
@@ -103,12 +103,13 @@ const ChatPlaygroundPage: React.FC = () => {
 
       // Only finalize if this is still the current request
       if (currentRequestId === requestIdRef.current) {
-        // Mock token count update (would come from API in real implementation)
-        setTokenCount({
-          prompt: Math.floor(messageText.length / 4),
-          completion: Math.floor(currentStreamingContent.length / 4),
-          total: Math.floor((messageText.length + currentStreamingContent.length) / 4),
-        });
+        if (usage && usage.promptTokens !== undefined) {
+          setTokenCount({
+            prompt: usage.promptTokens!,
+            completion: usage.completionTokens!,
+            total: usage.totalTokens!,
+          });
+        }
       }
 
     } catch (error) {
@@ -134,7 +135,6 @@ const ChatPlaygroundPage: React.FC = () => {
     updateLastMessage,
     setTokenCount,
     streamingMutation,
-    currentStreamingContent,
   ]);
 
   // Handle prompt card selection

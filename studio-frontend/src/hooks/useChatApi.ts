@@ -33,7 +33,7 @@ export const useChatCompletion = () => {
 // Streaming chat completion
 export const useStreamingChat = () => {
   return useMutation({
-    mutationFn: async (request: ChatCompletionRequest & { onChunk: (chunk: string) => void }) => {
+    mutationFn: async (request: ChatCompletionRequest & { onChunk: (chunk: string) => void }): Promise<{ promptTokens?: number; completionTokens?: number; totalTokens?: number }> => {
       const { onChunk, ...requestData } = request;
       
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/v1/chat/completions/`, {
@@ -59,6 +59,7 @@ export const useStreamingChat = () => {
 
       const decoder = new TextDecoder();
       let buffer = '';
+      let usageTokens: { promptTokens: number; completionTokens: number; totalTokens: number } | undefined;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -74,13 +75,22 @@ export const useStreamingChat = () => {
           if (line.trim() === '') continue;
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
-            if (data === '[DONE]') break;
-            
+            if (data === '[DONE]') {
+              // Reached stream end
+              break;
+            }
             try {
               const parsed = JSON.parse(data);
+
+              // Capture incremental content chunks
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
                 onChunk(content);
+              }
+
+              // Capture final usage tokens if present in this chunk
+              if (parsed.usage) {
+                usageTokens = parsed.usage;
               }
             } catch (_e) {
               console.warn('Failed to parse SSE data:', data);
@@ -88,6 +98,9 @@ export const useStreamingChat = () => {
           }
         }
       }
+
+      // Return the usage tokens to caller (may be undefined if not provided)
+      return usageTokens || {};
     },
   });
 }; 
