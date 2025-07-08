@@ -7,7 +7,7 @@ export const useModels = () => {
   return useQuery({
     queryKey: ['models'],
     queryFn: async (): Promise<ModelInfo[]> => {
-      const response = await http.get('/v1/models');
+      const response = await http.get('/v1/models/');
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -24,7 +24,7 @@ export const useModels = () => {
 export const useChatCompletion = () => {
   return useMutation({
     mutationFn: async (request: ChatCompletionRequest): Promise<ChatCompletionResponse> => {
-      const response = await http.post('/v1/chat/completions', request);
+      const response = await http.post('/v1/chat/completions/', request);
       return response.data;
     },
   });
@@ -36,7 +36,7 @@ export const useStreamingChat = () => {
     mutationFn: async (request: ChatCompletionRequest & { onChunk: (chunk: string) => void }) => {
       const { onChunk, ...requestData } = request;
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/v1/chat/completions`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/v1/chat/completions/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

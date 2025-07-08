@@ -1,0 +1,1 @@
+{"model":"smollm2:latest","messages":[{"role":"user","content":"Hello"}],"temperature":0.7,"topP":0.9,"stream":false}
