@@ -1,0 +1,1 @@
+{"model":"mistral:instruct","messages":[{"role":"user","content":"Hello there"}],"temperature":0.7,"topP":0.9,"stream":true}

@@ -103,6 +103,8 @@ export const useStreamingChat = () => {
   return useMutation({
     mutationFn: async (request: ChatCompletionRequest & { onChunk: (chunk: string) => void }): Promise<{ promptTokens?: number; completionTokens?: number; totalTokens?: number }> => {
       const { onChunk, ...requestData } = request;
+      const requestId = Math.random().toString(36).slice(2, 10); // short random id for tracing
+      console.debug(`[stream:${requestId}] starting streaming request`, requestData);
       
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/v1/chat/completions/`, {
         method: 'POST',
@@ -117,11 +119,13 @@ export const useStreamingChat = () => {
       });
 
       if (!response.ok) {
+        console.debug(`[stream:${requestId}] HTTP error`, response.status, response.statusText);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const reader = response.body?.getReader();
       if (!reader) {
+        console.debug(`[stream:${requestId}] Response body is not readable`);
         throw new Error('Response body is not readable');
       }
 
@@ -131,12 +135,15 @@ export const useStreamingChat = () => {
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.debug(`[stream:${requestId}] DONE`);
+          break;
+        }
 
-        buffer += decoder.decode(value, { stream: true });
+        const decoded = decoder.decode(value, { stream: true });
+        console.debug(`[stream:${requestId}] raw chunk`, decoded);
+        buffer += decoded;
         const lines = buffer.split('\n');
-        
-        // Keep the last incomplete line in buffer
         buffer = lines.pop() || '';
 
         for (const line of lines) {
@@ -144,30 +151,25 @@ export const useStreamingChat = () => {
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
             if (data === '[DONE]') {
-              // Reached stream end
+              console.debug(`[stream:${requestId}] got [DONE]`);
               break;
             }
             try {
               const parsed = JSON.parse(data);
-
-              // Capture incremental content chunks
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
                 onChunk(content);
               }
-
-              // Capture final usage tokens if present in this chunk
               if (parsed.usage) {
                 usageTokens = parsed.usage;
               }
             } catch (_e) {
-              console.warn('Failed to parse SSE data:', data);
+              console.warn(`[stream:${requestId}] Failed to parse SSE data:`, data);
             }
           }
         }
       }
 
-      // Return the usage tokens to caller (may be undefined if not provided)
       return usageTokens || {};
     },
   });

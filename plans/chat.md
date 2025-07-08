@@ -1,198 +1,134 @@
-# 📝 Chat Playground Planning Document
+# 🧩 Chat System Plan (Single Source of Truth)
 
-## 1. Purpose & Scope
-The Chat Playground replicates Google AI Studio's chat experience but with AI STUDIO branding and our design tokens. It enables authenticated users to converse with selected foundation models, tweak generation parameters, and view prompt/response history.
-
-This document defines:
-- Page layout & route
-- Reusable UI components
-- State management contracts
-- API interactions
-- Styling guidelines (teal & lime-yellow theme)
-- Accessibility & responsiveness requirements
-- Future enhancement hooks
+## 1. Purpose
+Provide a modern, streaming AI chat experience using foundation models, with a scalable backend and a responsive, accessible frontend.
 
 ---
 
-## 2. Route & Access
-| Path | Access | Redirects |
-|------|--------|-----------|
-| `/app/studio/chat` | Authenticated users | — |
-| `/chat` | Authenticated users | → `/app/studio/chat` (handled by router) |
+## 2. Backend (Django + Ollama)
 
-Both paths resolve to **`ChatPlaygroundPage`** and render inside `AppLayout` with the **Studio** side-nav variant active.
+### Endpoints
+- `POST /v1/chat/completions`  
+  - Accepts: model, messages, temperature, topP, tools, stream (bool)
+  - Returns: streaming or non-streaming OpenAI-compatible response
+- `GET /v1/models`  
+  - Returns: list of available models with metadata
+
+### Core Logic
+- Uses the official Ollama Python client to handle chat completions and model listing.
+- Streams responses as Server-Sent Events (SSE) in OpenAI-compatible format:
+  ```
+  data: {"choices":[{"delta":{"content":"Hello"}}]}
+  data: {"choices":[{"delta":{"content":" there"}}]}
+  data: [DONE]
+  ```
+- Returns usage and finish reason in camelCase.
+- Stateless by default; chat session persistence is planned for future releases.
+- Rate limiting and usage tracking are planned for future analytics and billing.
+
+### Extensibility
+- Future endpoints for chat session persistence:
+  - `/api/chat/sessions/` (CRUD for chat sessions and messages)
+- Usage analytics and rate limiting via Redis or database.
 
 ---
 
-## 3. High-Level Layout
+## 3. Frontend (React 19 + Vercel AI SDK)
+
+### Core Components
+- `ChatPlaygroundPage`: Main chat UI
+- `useChat` (from `@ai-sdk/react`): Handles message state, streaming, abort, and UI updates
+- `RunSettingsPanel`: Model selector, temperature, tool toggles
+- `TokenCountMeter`: Displays prompt/completion/total tokens
+
+### State Management
+- Local state: Zustand for UI state (messages, model, temperature, etc.)
+- Server state: React Query for models and chat completions
+
+### API Integration
+- Uses `/v1/chat/completions` for chat (streaming and non-streaming)
+- Uses `/v1/models` for model listing
+
+### Streaming
+- Uses `useChat` to handle streaming responses from the backend.
+- UI updates incrementally as tokens arrive.
+- Supports abort/stop generation via AbortController.
+
+### UI/UX
+- Responsive, accessible design with theming (teal and lime-yellow)
+- Keyboard shortcuts and ARIA support
+- Error boundaries and toast notifications for error handling
+
+### Extensibility
+- Planned: persistent chat history, multi-session support, advanced tools (function calling, image generation)
+- Easy integration of new models via `/v1/models`
+
+---
+
+## 4. Data Contracts
+
+### Chat Completion Request
+```json
+{
+  "model": "llama3",
+  "messages": [
+    {"role": "user", "content": "Hello"},
+    {"role": "assistant", "content": "Hi there!"}
+  ],
+  "temperature": 1.0,
+  "topP": 0.95,
+  "tools": [],
+  "stream": true
+}
 ```
-<AppLayout>
-  ├─ <SideNav variant="studio" />          // global navigation
-  ├─ <TopBar>
-  │    ├─ Breadcrumb: Studio / Chat
-  │    ├─ SearchBar (future)
-  │    ├─ GetAPIKeyButton
-  │    └─ ProfileMenu
-  └─ <ChatPlaygroundPage>
-        ├─ <PromptCardGrid />              // "What's new" cards when chat buffer empty
-        ├─ <ChatMessageList />             // scrollable, fills remaining height
-        └─ <ChatInputDock />               // sticky bottom input + send button
 
-        + floating <RunSettingsDrawer />   // right-side slide-over
+### Streaming Response
+```json
+// Each chunk:
+data: {"choices":[{"delta":{"content":"Hello"}}]}
+// ...
+data: [DONE]
 ```
 
-Visual reference is identical to the provided screenshot, substituting **AI STUDIO** logo/text and using theme colors.
+### Final Response (non-streaming or last chunk)
+```json
+{
+  "id": "chatcmpl-123",
+  "choices": [{
+    "message": {
+      "role": "assistant",
+      "content": "Hello! How can I help you today?"
+    },
+    "finishReason": "stop"
+  }],
+  "usage": {
+    "promptTokens": 10,
+    "completionTokens": 15,
+    "totalTokens": 25
+  }
+}
+```
 
 ---
 
-## 4. Component Inventory
-1. **ChatPlaygroundPage** (page container)
-2. **PromptCard** (reusable marketing/preset card)
-3. **ChatMessageList**
-   - **ChatMessageItem** (assistant | user | system variants)
-4. **ChatInputDock**
-   - Multi-line `<TextareaAutosize>`
-   - **SendButton** (teal bg, lime hover)
-   - Model "thinking" spinner overlay
-5. **RunSettingsDrawer**
-   - Temperature slider
-   - Top-p slider (hidden until advanced toggle)
-   - Tool toggles (checkbox list)
-   - Safety settings accordion
-6. **ModelSelector** (drop-down in drawer header)
-7. **TokenCountMeter** (shows request + response tokens in real time)
-8. **SideNav** *(existing)* – ensure **Chat** item active
-9. **TopBar** *(existing)*
-10. **Toast** *(existing)* – error/success messages
-11. **LoadingOverlay** – covers message list during initial load
-12. **ConfirmationDialog** – clear history action
+## 5. Implementation Priorities
 
-All new components live in `studio-frontend/src/components/studio/`.
+1. Chat completions proxy (stateless, streaming, OpenAI-compatible)
+2. Model listing endpoint
+3. Frontend streaming chat UI with Vercel AI SDK
+4. Session persistence and history (future)
+5. Usage tracking and analytics (future)
 
 ---
 
-## 5. State Management
-`studioStore` (Zustand) additions:
-- `messages: ChatMessage[]`
-- `currentModel: string`
-- `temperature: number`
-- `tools: ToolToggleState`
-- `sendMessage(text: string)` (optimistic append → API call)
-- `clearChat()`
+## 6. Future Enhancements
 
-React-Query hooks:
-- `useChatCompletion` (POST `/v1/chat/completions`)
-- `useModels` (GET `/v1/models` for selector)
-
-Side effects: Scroll to bottom on new message, focus input.
+- Persistent chat history and multi-session support
+- Advanced tool calling and function execution
+- Image, audio, and multimodal generation
+- Usage analytics and billing integration
+- Team/workspace support
 
 ---
 
-## 6. Styling & Theming
-Color tokens (from `styles.md`):
-- **Primary (teal)**: `#009688`
-- **Accent (lime-yellow)**: `#CDDC39`
-- **Surface**: matches dark/light modes established in auth pages
-
-Guidelines:
-- Buttons: teal background, lime focus ring
-- Links & interactive icons: teal default, lime on hover/active
-- Message bubbles: user → surface-3, assistant → surface-1 with teal left border
-- Card hover shadow tinted teal
-- Drawer scrollbar styled in surface-variant
-
-Typography & spacing follow global `themeHelpers` scale.
-
----
-
-## 7. Accessibility
-- Ensure color contrast ≥ 4.5:1
-- Keyboard navigable: Tab order `TopBar → SideNav → MessageList → Input → SettingsDrawer`
-- `aria-live="polite"` on new assistant messages
-- Provide `aria-label` for Send button
-
----
-
-## 8. Responsiveness
-- ≥ 1024 px: two-panel (chat + RunSettingsDrawer pinned open)
-- 768–1024 px: drawer collapses to icon button (top-right)
-- ≤ 768 px: full-width chat; settings drawer slides over
-
-ChatInputDock always sticky bottom with safe-area insets for mobile.
-
----
-
-## 9. Future Enhancements
-- System / developer message roles
-- Regenerate / edit message actions
-- Prompt snippets sidebar
-- Share / export conversation
-- Voice input & TTS playback
-
----
-
-## 10. Open Questions
-1. Do we cache chat history per user or per session only?
-2. How are stop sequences exposed in the UI?
-3. Should we support function calling v1 in MVP?
-
-Add answers or notes to **`TASK.md ▸ Discovered During Work`** when clarified.
-
-## 11. Additional Implementation Considerations
-
-> The items below have been added after a second-pass review to avoid surprises during implementation.  When any of these bullets are answered or delivered, update the relevant planning doc and/or `TASK.md`.
-
-### 11.1 Routing & Auth Guards
-- Wrap `/app/**` routes in a **`<ProtectedRoute>`** (or `AuthGate`) component that redirects unauthenticated users to `/signin`.
-- Centralise 404 and logout redirects in `App.tsx` for consistency.
-
-### 11.2 Data Contracts
-- **`ChatMessage` type**: `{ id: string; role: "user" | "assistant" | "system"; content: string; createdAt: string; error?: boolean; functionCall?: {...} }`.
-- Draft the full request / response JSON schema for `POST /v1/chat/completions` including **streaming** and **non-streaming** variants.
-- Define standard error payloads (rate-limit, quota-exceeded, model-unavailable) so the Toast service can map them to friendly copy.
-
-### 11.3 Streaming Strategy
-- Use **`fetch` + ReadableStream** for token streaming (fallback to single-shot if browser lacks support).
-- Maintain a reference to the current `AbortController` so users can press *Stop Generating*.
-- Incrementally patch the last assistant message in `studioStore.messages` as chunks arrive.
-
-### 11.4 Performance & Virtualisation
-- Introduce **virtualised rendering** (e.g. `react-window`) for `ChatMessageList` once message count > 50.
-- Memoise Markdown rendering / syntax highlighting to prevent reflows.
-
-### 11.5 Persistence & Caching
-- Decide between **IndexedDB** (via `idb-keyval`) or server-side history for resilience across tabs.
-- Maximum stored conversations per user (configurable, default = 20).
-
-### 11.6 Global UI Services
-- Place an **`ErrorBoundary`** around `ChatPlaygroundPage` to capture render failures.
-- Re-use existing **Toast** and **ConfirmationDialog** providers; list new events:
-  1. Network / API failure
-  2. Clear-history confirmation
-  3. Model quota exceeded
-
-### 11.7 Keyboard Shortcuts & A11y Details
-- `Ctrl + Enter` → Send message
-- `Esc` → Close RunSettingsDrawer
-- `Alt + /` → Focus ChatInput
-- Ensure correct `aria-live` regions update only when new content is appended.
-
-### 11.8 Testing & QA
-- **Unit**: Zustand store actions, utility formatters.
-- **Component**: ChatInputDock, RunSettingsDrawer interactions.
-- **E2E (Playwright)**: mock signin → send prompt → receive streamed response → assert token meter updates.
-
-### 11.9 Feature Flags & Environment Variables
-- `VITE_CHAT_STREAMING_ENABLED` (bool)
-- `VITE_OPENAI_ENDPOINT`, `VITE_DEFAULT_MODEL`
-- Provide `.env.example` with sane defaults/mocks.
-
-### 11.10 Internationalisation & Copy Management
-- Centralise UI strings in `locales/en.json` via a lightweight i18n util—even if English-only for MVP.
-
-### 11.11 Documentation & DevOps Hooks
-- Update **README.md** with new env vars & mock backend instructions.
-- Make sure **`TASK.md`** is amended when these considerations transition to tasks.
-- Add a CI check for missing env vars in Pull Requests.
-
---- 
+**This plan is the single source of truth for the chat system. All implementation and documentation should align with this architecture.** 

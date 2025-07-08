@@ -180,12 +180,14 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
                   <MenuItem key={model.id} value={model.id}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                       <Box>
+                        {/* Show the model ID (e.g., "llama3") as the main title */}
                         <Typography variant="body2" fontWeight={500}>
-                          {model.displayLabel || model.name}
+                          {model.id}
                         </Typography>
-                        {model.description && (
+                        {/* Show description if available; otherwise fall back to the computed displayLabel for extra context */}
+                        {(model.description || model.displayLabel) && (
                           <Typography variant="caption" color="text.secondary">
-                            {model.description}
+                            {model.description ?? model.displayLabel}
                           </Typography>
                         )}
                       </Box>

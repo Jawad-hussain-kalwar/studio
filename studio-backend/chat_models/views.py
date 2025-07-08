@@ -11,6 +11,7 @@ from django.http import JsonResponse, StreamingHttpResponse
 from django.core.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+import uuid
 
 from .ollama_client import OllamaClient, OllamaError, OllamaConnectionError, OllamaModelError
 from .streaming import create_chat_stream_response
@@ -75,7 +76,8 @@ class ChatCompletionView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            logger.info(f"Chat completion request received: {request.data}")
+            request_id = str(uuid.uuid4())
+            logger.info(f"[stream:{request_id}] Chat completion request received: {request.data}")
             
             # Validate request
             validator = ChatRequestValidator()
@@ -100,13 +102,13 @@ class ChatCompletionView(APIView):
                             logger.info("Starting stream generation...")
                             
                             # Use Ollama client for streaming
-                            for chunk in client.chat_completion_stream(
+                            for idx, chunk in enumerate(client.chat_completion_stream(
                                 model=cleaned_data['model'],
                                 messages=cleaned_data['messages'],
                                 temperature=cleaned_data.get('temperature', 0.7),
                                 top_p=cleaned_data.get('top_p', 0.9)
-                            ):
-                                logger.info(f"Stream chunk: {chunk}")
+                            )):
+                                logger.debug(f"[stream:{request_id}] chunk={idx} done={chunk.get('done', False)} usage={chunk.get('usage')}")
                                 # Format as SSE (bytes)
                                 yield f"data: {json.dumps(chunk)}\n\n".encode("utf-8")
                                 
