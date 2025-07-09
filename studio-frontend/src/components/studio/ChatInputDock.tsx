@@ -6,14 +6,17 @@ import {
   InputBase,
   alpha,
   CircularProgress,
+  Chip,
 } from '@mui/material';
 import {
   SendOutlined as SendIcon,
   StopOutlined as StopIcon,
+  AttachFileOutlined as AttachFileIcon,
+  CloseOutlined as CloseIcon,
 } from '@mui/icons-material';
 
 interface ChatInputDockProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, attachments?: FileList) => void;
   isGenerating?: boolean;
   disabled?: boolean;
   onStop?: () => void;
@@ -32,7 +35,9 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
   clearOnSend = true,
 }) => {
   const [input, setInput] = useState('');
+  const [attachments, setAttachments] = useState<FileList | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -44,10 +49,14 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
   }, [input]);
 
   const handleSubmit = () => {
-    if (input.trim() && !isGenerating) {
-      onSendMessage(input.trim());
+    if ((input.trim() || attachments) && !isGenerating) {
+      onSendMessage(input.trim(), attachments || undefined);
       if (clearOnSend) {
         setInput('');
+        setAttachments(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     }
   };
@@ -69,6 +78,33 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
     }
   };
 
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setAttachments(files);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    if (!attachments) return;
+    
+    const dt = new DataTransfer();
+    for (let i = 0; i < attachments.length; i++) {
+      if (i !== index) {
+        dt.items.add(attachments[i]);
+      }
+    }
+    setAttachments(dt.files.length > 0 ? dt.files : null);
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -85,6 +121,43 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
       }}
     >
       <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          multiple
+          accept="image/*,application/pdf,.pdf,.doc,.docx,.txt"
+          style={{ display: 'none' }}
+        />
+
+        {/* Attachment previews */}
+        {attachments && attachments.length > 0 && (
+          <Box sx={{ mb: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {Array.from(attachments).map((file, index) => (
+              <Chip
+                key={index}
+                label={file.name}
+                size="small"
+                onDelete={() => removeAttachment(index)}
+                deleteIcon={<CloseIcon />}
+                sx={{
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  background: (theme) => 
+                    theme.palette.mode === 'dark' 
+                      ? 'rgba(18, 18, 18, 0.7)' 
+                      : 'rgba(255, 255, 255, 0.7)',
+                  border: (theme) => 
+                    `1px solid ${theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.15)' 
+                      : 'rgba(255, 255, 255, 0.3)'}`,
+                }}
+              />
+            ))}
+          </Box>
+        )}
+
         <Paper
           elevation={0}
           sx={{
@@ -116,6 +189,21 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
             },
           }}
         >
+          {/* Attachment Button */}
+          <IconButton
+            onClick={handleFileUpload}
+            disabled={disabled}
+            sx={{
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'primary.main',
+              },
+            }}
+            title="Attach file"
+          >
+            <AttachFileIcon fontSize="small" />
+          </IconButton>
+
           {/* Text Input */}
           <InputBase
             ref={textareaRef}
@@ -148,7 +236,7 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
           {/* Send/Stop Button */}
           <IconButton
             onClick={isGenerating ? handleStop : handleSubmit}
-            disabled={(!input.trim() && !isGenerating) || disabled}
+            disabled={(!input.trim() && !attachments && !isGenerating) || disabled}
             sx={{
               bgcolor: 'primary.main',
               color: 'primary.contrastText',

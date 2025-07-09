@@ -165,8 +165,8 @@ class ChatRequestValidator:
             raise ValidationError("Top-p must be between 0.0 and 1.0")
         validated["top_p"] = float(top_p)
         
-        # Validate stream
-        stream = data.get("stream", False)
+        # Validate stream - default to True for useChat compatibility
+        stream = data.get("stream", True)
         if not isinstance(stream, bool):
             raise ValidationError("Stream must be a boolean")
         validated["stream"] = stream

@@ -103,8 +103,8 @@ export const useStudioStore = create<StudioState>((set) => ({
   
   setTokenCount: (tokenCount) => set((state) => ({ tokenCount: { ...state.tokenCount, ...tokenCount } })),
   
-  clearMessages: () => set({ 
+  clearMessages: () => set((state) => ({ 
     messages: [],
-    tokenCount: { prompt: 0, completion: 0, total: 0 },
-  }),
+    tokenCount: { prompt: 0, completion: 0, total: 0, contextLength: state.tokenCount.contextLength },
+  })),
 })); 

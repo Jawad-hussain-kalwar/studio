@@ -1,205 +1,134 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { useStudioStore } from '../../../stores/studioStore';
-import { useStreamingChat } from '../../../hooks/useChatApi';
+import { useChat } from 'ai/react';
 import PromptCardGrid from '../../../components/studio/PromptCardGrid';
 import ChatMessageList from '../../../components/studio/ChatMessageList';
 import ChatInputDock from '../../../components/studio/ChatInputDock';
 import RunSettingsPanel from '../../../components/studio/RunSettingsPanel';
 
-type StreamingStatus = 'idle' | 'thinking' | 'streaming';
-
 const ChatPlaygroundPage: React.FC = () => {
   const {
-    messages,
+    messages: zustandMessages,
     currentModel,
     temperature,
     topP,
     tools,
-    addMessage,
-    updateLastMessage,
+    setIsGenerating,
     setTokenCount,
   } = useStudioStore();
 
-  const [currentStreamingContent, setCurrentStreamingContent] = useState('');
-  const [streamingStatus, setStreamingStatus] = useState<StreamingStatus>('idle');
-  const streamingMutation = useStreamingChat();
-  const requestIdRef = useRef(0);
-
-  // Derived state for backwards compatibility
-  const isGenerating = streamingStatus !== 'idle';
-
-  // Update the last message when streaming content changes
-  useEffect(() => {
-    if (currentStreamingContent && streamingStatus === 'streaming') {
-      updateLastMessage(currentStreamingContent);
-    }
-  }, [currentStreamingContent, streamingStatus, updateLastMessage]);
-
-  // Handle sending a message
-  const handleSendMessage = useCallback(async (messageText: string) => {
-    if (!currentModel) {
-      return; // No model available
-    }
-
-    // Increment request ID to handle overlapping requests
-    const currentRequestId = ++requestIdRef.current;
-
-    // Add user message
-    addMessage({
-      role: 'user',
-      content: messageText,
-    });
-
-    // Add placeholder assistant message
-    addMessage({
-      role: 'assistant',
-      content: '',
-    });
-
-    // Set to thinking immediately when request starts
-    setStreamingStatus('thinking');
-    setCurrentStreamingContent('');
-
-    try {
-      // Create the API request
-      const requestMessages = [
-        ...messages,
-        {
-          id: `temp-${Date.now()}`,
-          role: 'user' as const,
-          content: messageText,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-
-      // Get enabled tools
-      const enabledTools = Object.entries(tools)
-        .filter(([_, enabled]) => enabled)
-        .map(([toolName, _]) => toolName);
-
-      let isFirstChunk = true;
-
-      const usage = await streamingMutation.mutateAsync({
-        model: currentModel,
-        messages: requestMessages,
-        temperature,
-        topP,
-        tools: enabledTools,
-        stream: true,
-        onChunk: (chunk: string) => {
-          // Only process if this is still the current request
-          if (currentRequestId !== requestIdRef.current) return;
-
-          // Switch to streaming on first chunk
-          if (isFirstChunk) {
-            isFirstChunk = false;
-            setStreamingStatus('streaming');
-          }
-
-          setCurrentStreamingContent(prev => prev + chunk);
-        },
-      });
-
-      // Only finalize if this is still the current request
-      if (currentRequestId === requestIdRef.current) {
-        if (usage && usage.promptTokens !== undefined) {
-          setTokenCount({
-            prompt: usage.promptTokens!,
-            completion: usage.completionTokens!,
-            total: usage.totalTokens!,
-          });
-        }
-      }
-
-    } catch (error) {
-      console.error('Chat error:', error);
-      // Only handle error if this is still the current request
-      if (currentRequestId === requestIdRef.current) {
-        updateLastMessage('Sorry, I encountered an error while processing your request. Please try again.', true);
-      }
-    } finally {
-      // Only reset if this is still the current request
-      if (currentRequestId === requestIdRef.current) {
-        setStreamingStatus('idle');
-        setCurrentStreamingContent('');
-      }
-    }
-  }, [
-    messages,
+  // Get API base URL from environment
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  
+  console.log('🚀 ChatPlaygroundPage render:', {
     currentModel,
     temperature,
     topP,
     tools,
-    addMessage,
-    updateLastMessage,
-    setTokenCount,
-    streamingMutation,
-  ]);
+    API_BASE_URL,
+    messagesCount: zustandMessages.length
+  });
+
+  // Simple useChat configuration following official documentation
+  const {
+    messages,
+    status,
+    append,
+  } = useChat({
+    api: `${API_BASE_URL}/v1/chat/completions/`,
+    streamProtocol: 'data', // Explicitly set to use data stream protocol
+    body: {
+      model: currentModel,
+      temperature,
+      top_p: topP,
+      tools: Object.keys(tools).filter(key => tools[key]),
+      max_tokens: 4096,
+    },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+    },
+    onFinish: (_, { usage }) => {
+      console.log('✅ Chat completed, usage:', usage);
+      if (usage) {
+        setTokenCount({
+          prompt: usage.promptTokens,
+          completion: usage.completionTokens,
+          total: usage.totalTokens,
+        });
+      }
+      setIsGenerating(false);
+    },
+    onError: (error) => {
+      console.log('❌ Chat error:', error);
+      setIsGenerating(false);
+    },
+    onResponse: (response) => {
+      console.log('📡 Chat response received:', response.status, response.statusText);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+      setIsGenerating(true);
+    },
+  });
 
   // Handle prompt card selection
   const handlePromptSelect = useCallback((prompt: string) => {
-    handleSendMessage(prompt);
-  }, [handleSendMessage]);
+    console.log('🎯 Prompt selected:', prompt);
+    append({
+      role: 'user',
+      content: prompt,
+    });
+  }, [append]);
 
-  // Handle stopping generation
-  const handleStopGeneration = useCallback(() => {
-    setStreamingStatus('idle');
-    setCurrentStreamingContent('');
-    // In a real implementation, you would cancel the stream request here
-  }, []);
+  // Update status when chat status changes
+  useEffect(() => {
+    console.log('🔄 Chat status changed:', status);
+    setIsGenerating(status === 'submitted' || status === 'streaming');
+  }, [status, setIsGenerating]);
+
+  // Convert UIMessage to ChatMessage for our components
+  const chatMessages = messages.map(msg => ({
+    id: msg.id,
+    role: msg.role === 'data' ? 'assistant' : msg.role,
+    content: msg.content,
+    createdAt: new Date().toISOString(),
+  })) as import('../../../types/chat').ChatMessage[];
 
   return (
     <Box
       sx={{
-        height: '100%',
-        width: '100%',
         display: 'flex',
-        flexDirection: 'row',
+        height: '100vh',
+        overflow: 'hidden',
       }}
     >
-      {/* Main Content Area (Left Side) */}
-      <Box 
-        sx={{ 
-          flexGrow: 1, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          overflow: 'hidden',
-          minWidth: 0,
-          height: '100%',
-        }}
-      >
-        {/* Content that can scroll under the floating input */}
-        <Box sx={{ flexGrow: 1, overflow: 'auto', height: '100%' }}>
-          {/* Show PromptCardGrid when no messages, ChatMessageList when there are messages */}
-          {!currentModel ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60%' }}>
-              <Box sx={{ textAlign: 'center', color: 'text.secondary' }}>
-                <p>No chat models available. Please ensure Ollama is running and models are downloaded.</p>
-              </Box>
-            </Box>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+          {messages.length === 0 ? (
+            <PromptCardGrid onPromptSelect={handlePromptSelect} />
           ) : (
-            messages.length === 0 ? (
-              <PromptCardGrid onPromptSelect={handlePromptSelect} />
-            ) : (
-              <ChatMessageList 
-                messages={messages} 
-                isLoading={streamingStatus === 'thinking'} 
-              />
-            )
+            <ChatMessageList messages={chatMessages} />
           )}
         </Box>
 
-        {/* Floating Chat Input - rendered but positioned fixed */}
         <ChatInputDock
-          onSendMessage={handleSendMessage}
-          isGenerating={isGenerating}
-          onStop={handleStopGeneration}
-          disabled={!currentModel}
+          onSendMessage={(msg: string, attachments?: FileList) => {
+            console.log('💬 onSendMessage called:', {
+              message: msg,
+              attachments: attachments ? Array.from(attachments).map(f => f.name) : null,
+              currentModel,
+              temperature,
+              topP
+            });
+            
+            append({
+              role: 'user',
+              content: msg,
+            });
+          }}
         />
       </Box>
 
-      {/* Settings Panel (Right Side) - Always visible */}
       <RunSettingsPanel />
     </Box>
   );

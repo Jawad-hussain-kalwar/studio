@@ -6,6 +6,8 @@ import logging
 from typing import Dict, List, Any, Optional, Iterator
 from django.conf import settings
 import ollama
+import uuid
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -193,8 +195,12 @@ class OllamaClient:
     def _format_completion_response(self, ollama_response: Dict[str, Any]) -> Dict[str, Any]:
         """Convert Ollama response to OpenAI-compatible format."""
         return {
-            "id": f"chatcmpl-{ollama_response.get('created_at', '')}",
+            "id": f"chatcmpl-{uuid.uuid4().hex[:8]}",
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": ollama_response.get("model", "unknown"),
             "choices": [{
+                "index": 0,
                 "message": {
                     "role": "assistant",
                     "content": ollama_response.get("message", {}).get("content", "")
@@ -218,10 +224,18 @@ class OllamaClient:
             
         content = ollama_chunk["message"].get("content", "")
         
+        # Generate a unique ID for this chunk
+        chunk_id = f"chatcmpl-{uuid.uuid4().hex[:8]}"
+        
         if ollama_chunk.get("done"):
             # Final chunk
             return {
+                "id": chunk_id,
+                "object": "chat.completion.chunk",
+                "created": int(time.time()),
+                "model": ollama_chunk.get("model", "unknown"),
                 "choices": [{
+                    "index": 0,
                     "delta": {},
                     "finishReason": "stop"
                 }],
@@ -237,10 +251,16 @@ class OllamaClient:
         else:
             # Content chunk
             return {
+                "id": chunk_id,
+                "object": "chat.completion.chunk",
+                "created": int(time.time()),
+                "model": ollama_chunk.get("model", "unknown"),
                 "choices": [{
+                    "index": 0,
                     "delta": {
                         "content": content
-                    }
+                    },
+                    "finishReason": None
                 }]
             }
 
