@@ -8,12 +8,10 @@ import {
   CircularProgress,
   Chip,
 } from '@mui/material';
-import {
-  SendOutlined as SendIcon,
-  StopOutlined as StopIcon,
-  AttachFileOutlined as AttachFileIcon,
-  CloseOutlined as CloseIcon,
-} from '@mui/icons-material';
+import SendIcon from '@mui/icons-material/SendOutlined';
+import StopIcon from '@mui/icons-material/StopOutlined';
+import AttachFileIcon from '@mui/icons-material/AttachFileOutlined';
+import CloseIcon from '@mui/icons-material/CloseOutlined';
 
 interface ChatInputDockProps {
   onSendMessage: (message: string, attachments?: FileList) => void;

@@ -15,27 +15,26 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
-import {
-  SettingsOutlined as SettingsIcon,
-  AccountCircleOutlined as AccountCircleIcon,
-  KeyOutlined as KeyIcon,
-  EditOutlined as EditOutlinedIcon,
-  FileCopyOutlined as FileCopyOutlinedIcon,
-  ContentPasteOutlined as ContentPasteOutlinedIcon,
-  CompareArrowsOutlined as CompareArrowsOutlinedIcon,
-  SaveOutlined as SaveOutlinedIcon,
-  RefreshOutlined as RefreshOutlinedIcon,
-  DownloadOutlined as DownloadIcon,
-  LogoutOutlined as LogoutIcon,
-  PersonOutlined as PersonIcon,
-} from '@mui/icons-material';
-import { useLocation } from 'react-router-dom';
+import SettingsIcon from '@mui/icons-material/SettingsOutlined';
+import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
+import KeyIcon from '@mui/icons-material/KeyOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
+import ContentPasteOutlinedIcon from '@mui/icons-material/ContentPasteOutlined';
+import CompareArrowsOutlinedIcon from '@mui/icons-material/CompareArrowsOutlined';
+import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import DownloadIcon from '@mui/icons-material/DownloadOutlined';
+import LogoutIcon from '@mui/icons-material/LogoutOutlined';
+import PersonIcon from '@mui/icons-material/PersonOutlined';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useStudioStore } from '../stores/studioStore.ts';
 import { ThemeToggle } from './ThemeToggle.tsx';
 import { useAuth } from '../hooks/useAuth.ts';
 
 const TopBar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -214,6 +213,7 @@ const TopBar: React.FC = () => {
           startIcon={<KeyIcon />}
           variant="outlined"
           size="medium"
+          onClick={() => navigate('/app/api-keys')}
           sx={{
             borderColor: 'primary.main',
             color: 'primary.main',

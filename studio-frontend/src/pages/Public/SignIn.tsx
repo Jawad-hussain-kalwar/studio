@@ -99,6 +99,7 @@ import { Link as RouterLink, useSearchParams, useNavigate } from "react-router-d
 import { useState } from "react";
 import GoogleOutlined from "@mui/icons-material/Google";
 import AppleOutlined from "@mui/icons-material/Apple";
+import { API_BASE_URL } from "../../api/http";
 import { useThemeBackground, useGlassStyles } from "../../components/themeHelpers.tsx";
 import { ThemeToggle } from "../../components/ThemeToggle";
 
@@ -137,7 +138,7 @@ const SignIn = () => {
     setFormError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login/', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +168,7 @@ const SignIn = () => {
 
   const handleGoogleOAuth = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = "http://localhost:8000/api/auth/oauth/google/";
+    window.location.href = `${API_BASE_URL}/api/auth/oauth/google/`;
   };
 
   return (

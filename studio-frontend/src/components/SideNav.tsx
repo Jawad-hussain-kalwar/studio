@@ -9,17 +9,16 @@ import {
   Typography,
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  ChatOutlined as ChatIcon,
-  StreamOutlined as StreamIcon,
-  ImageOutlined as ImageIcon,
-  MicOutlined as MicIcon,
-  VideoLibraryOutlined as MediaIcon,
-  BuildOutlined as BuildIcon,
-  HistoryOutlined as HistoryIcon,
-  HomeOutlined as HomeIcon,
-  DashboardOutlined as DashboardIcon,
-} from '@mui/icons-material';
+import ChatIcon from '@mui/icons-material/ChatOutlined';
+import StreamIcon from '@mui/icons-material/StreamOutlined';
+import ImageIcon from '@mui/icons-material/ImageOutlined';
+import MicIcon from '@mui/icons-material/MicOutlined';
+import MediaIcon from '@mui/icons-material/VideoLibraryOutlined';
+import BuildIcon from '@mui/icons-material/BuildOutlined';
+import HistoryIcon from '@mui/icons-material/HistoryOutlined';
+import HomeIcon from '@mui/icons-material/HomeOutlined';
+import DashboardIcon from '@mui/icons-material/DashboardOutlined';
+import KeyIcon from '@mui/icons-material/KeyOutlined';
 
 const DRAWER_WIDTH = 235;
 
@@ -33,6 +32,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Home', path: '/app/home', icon: <HomeIcon />, section: 'main' },
   { label: 'Dashboard', path: '/app/dashboard', icon: <DashboardIcon />, section: 'main' },
+  { label: 'API Keys', path: '/app/api-keys', icon: <KeyIcon />, section: 'main' },
   { label: 'Chat', path: '/app/studio/chat', icon: <ChatIcon />, section: 'studio' },
   { label: 'Stream', path: '/app/studio/stream', icon: <StreamIcon />, section: 'studio' },
   { label: 'Generate Image', path: '/app/studio/generate/image', icon: <ImageIcon />, section: 'studio' },

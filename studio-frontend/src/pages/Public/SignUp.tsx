@@ -125,6 +125,7 @@ import { Link as RouterLink, useSearchParams, useNavigate } from "react-router-d
 import { useState } from "react";
 import GoogleOutlined from "@mui/icons-material/Google";
 import AppleOutlined from "@mui/icons-material/Apple";
+import { API_BASE_URL } from "../../api/http";
 import { useThemeBackground, useGlassStyles } from "../../components/themeHelpers.tsx";
 import { ThemeToggle } from "../../components/ThemeToggle";
 
@@ -172,7 +173,7 @@ const SignUp = () => {
     setFieldErrors({});
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/register/', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -206,7 +207,7 @@ const SignUp = () => {
 
   const handleGoogleOAuth = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = "http://localhost:8000/api/auth/oauth/google/";
+    window.location.href = `${API_BASE_URL}/api/auth/oauth/google/`;
   };
 
   return (

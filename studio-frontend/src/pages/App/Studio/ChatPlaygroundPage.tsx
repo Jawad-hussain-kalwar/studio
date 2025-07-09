@@ -1,5 +1,6 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
+import { API_BASE_URL } from '../../../api/http';
 import { useStudioStore } from '../../../stores/studioStore';
 import { useChat } from 'ai/react';
 import PromptCardGrid from '../../../components/studio/PromptCardGrid';
@@ -18,8 +19,7 @@ const ChatPlaygroundPage: React.FC = () => {
     setTokenCount,
   } = useStudioStore();
 
-  // Get API base URL from environment
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  // API_BASE_URL now resolved centrally
   
   console.log('🚀 ChatPlaygroundPage render:', {
     currentModel,
@@ -30,26 +30,24 @@ const ChatPlaygroundPage: React.FC = () => {
     messagesCount: zustandMessages.length
   });
 
-  // Simple useChat configuration following official documentation
-  const {
-    messages,
-    status,
-    append,
-  } = useChat({
+  // Memoize chat hook options to avoid new object identity on every render, which
+  // leads to the "Maximum update depth exceeded" error when the hook detects
+  // option changes on each streaming update.
+  const chatOptions = useMemo(() => ({
     api: `${API_BASE_URL}/v1/chat/completions/`,
-    streamProtocol: 'data', // Explicitly set to use data stream protocol
+    streamProtocol: 'data' as const,
     body: {
       model: currentModel,
       temperature,
       top_p: topP,
-      tools: Object.keys(tools).filter(key => tools[key]),
+      tools: Object.keys(tools).filter((key) => tools[key]),
       max_tokens: 4096,
     },
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
     },
-    onFinish: (_, { usage }) => {
+    onFinish: (_: any, { usage }: any) => {
       console.log('✅ Chat completed, usage:', usage);
       if (usage) {
         setTokenCount({
@@ -60,16 +58,19 @@ const ChatPlaygroundPage: React.FC = () => {
       }
       setIsGenerating(false);
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.log('❌ Chat error:', error);
       setIsGenerating(false);
     },
-    onResponse: (response) => {
+    onResponse: (response: Response) => {
       console.log('📡 Chat response received:', response.status, response.statusText);
       console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
       setIsGenerating(true);
     },
-  });
+  }), [API_BASE_URL, currentModel, temperature, topP, tools, setIsGenerating, setTokenCount]);
+
+  // Initialize chat hook with stable options reference
+  const { messages, status, append } = useChat(chatOptions);
 
   // Handle prompt card selection
   const handlePromptSelect = useCallback((prompt: string) => {
@@ -103,7 +104,7 @@ const ChatPlaygroundPage: React.FC = () => {
       }}
     >
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+        <Box sx={{ flex: 1, overflow: 'auto' }}>
           {messages.length === 0 ? (
             <PromptCardGrid onPromptSelect={handlePromptSelect} />
           ) : (

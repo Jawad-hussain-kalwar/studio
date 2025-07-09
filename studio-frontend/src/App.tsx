@@ -11,6 +11,7 @@ import ComingSoon from "./components/ComingSoon.tsx";
 import DashboardPage from "./pages/App/DashboardPage.tsx";
 import OAuthCallback from "./components/OAuthCallback.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import ApiKeysPage from "./pages/App/ApiKeysPage.tsx";
 
 const AppWithOAuthCheck = () => {
   const [searchParams] = useSearchParams();
@@ -52,6 +53,7 @@ function App() {
             <Route path="studio/build" element={<ComingSoon message="Build Playground - Coming Soon" />} />
             <Route path="studio/history" element={<ComingSoon message="History - Coming Soon" />} />
             <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="api-keys" element={<ApiKeysPage />} />
           </Route>
           
           {/* Alias route for chat */}

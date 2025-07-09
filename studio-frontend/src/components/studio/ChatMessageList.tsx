@@ -10,10 +10,28 @@ interface ChatMessageListProps {
 
 const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages, isLoading }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Brief scrollbar visibility hint when messages change
+  useEffect(() => {
+    const element = scrollContainerRef.current;
+    if (element && messages.length > 0) {
+      // Add a small delay to ensure DOM is ready
+      setTimeout(() => {
+        // Check if element is scrollable and show brief hint
+        if (element.scrollHeight > element.clientHeight) {
+          element.classList.add('scrolling');
+          setTimeout(() => {
+            element.classList.remove('scrolling');
+          }, 1500);
+        }
+      }, 100);
+    }
   }, [messages]);
 
   if (messages.length === 0 && !isLoading) {
@@ -22,6 +40,7 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ messages, isLoading }
 
   return (
     <Box
+      ref={scrollContainerRef}
       sx={{
         flexGrow: 1,
         overflow: 'auto',

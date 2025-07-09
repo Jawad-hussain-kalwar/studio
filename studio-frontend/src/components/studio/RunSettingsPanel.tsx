@@ -17,12 +17,10 @@ import {
   AccordionDetails,
   TextField,
 } from '@mui/material';
-import {
-  //Close as CloseIcon,
-  ExpandMoreOutlined as ExpandMoreIcon,
-  ScienceOutlined as ScienceIcon,
-  InfoOutlined as InfoIcon,
-} from '@mui/icons-material';
+// import CloseIcon if needed later using direct path
+import ExpandMoreIcon from '@mui/icons-material/ExpandMoreOutlined';
+import ScienceIcon from '@mui/icons-material/ScienceOutlined';
+import InfoIcon from '@mui/icons-material/InfoOutlined';
 import { Suspense, lazy } from 'react';
 import { useStudioStore } from '../../stores/studioStore';
 import { useModels } from '../../hooks/useChatApi';

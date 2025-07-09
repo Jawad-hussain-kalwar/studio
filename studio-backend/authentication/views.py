@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
@@ -182,6 +183,7 @@ def health_check(request):
     return JsonResponse({'status': 'ok', 'message': 'Auth service is running'})
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def email_login(request):
@@ -230,6 +232,7 @@ def email_login(request):
         )
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def email_register(request):

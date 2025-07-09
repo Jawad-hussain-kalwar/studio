@@ -90,7 +90,19 @@ This HTTP client expects the following backend API structure and behavior:
 
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+/**
+ * Resolve backend base URL
+ * 1. Use VITE_API_BASE_URL if provided at build-time.
+ * 2. Fallback to current page hostname with :8000 (works for LAN testing).
+ */
+const getDefaultBackend = () => {
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    return `http://${window.location.hostname}:8000`;
+  }
+  return 'http://localhost:8000';
+};
+
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || getDefaultBackend();
 
 // Create axios instance
 export const http = axios.create({

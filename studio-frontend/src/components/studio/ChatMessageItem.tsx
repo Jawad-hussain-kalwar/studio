@@ -6,11 +6,9 @@ import {
   IconButton,
   alpha,
 } from '@mui/material';
-import {
-  ContentCopyOutlined as CopyIcon,
-  ThumbUpOutlined as ThumbUpIcon,
-  ThumbDownOutlined as ThumbDownIcon,
-} from '@mui/icons-material';
+import CopyIcon from '@mui/icons-material/ContentCopyOutlined';
+import ThumbUpIcon from '@mui/icons-material/ThumbUpOutlined';
+import ThumbDownIcon from '@mui/icons-material/ThumbDownOutlined';
 import type { ChatMessage } from '../../types/index.ts';
 
 interface ChatMessageItemProps {

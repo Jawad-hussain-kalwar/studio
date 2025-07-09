@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { http } from '../api/http';
+import { http, API_BASE_URL } from '../api/http';
 import type { ChatCompletionRequest, ChatCompletionResponse, ModelInfo } from '../types/index.ts';
 
 // Get available models
@@ -106,7 +106,7 @@ export const useStreamingChat = () => {
       const requestId = Math.random().toString(36).slice(2, 10); // short random id for tracing
       console.debug(`[stream:${requestId}] starting streaming request`, requestData);
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/v1/chat/completions/`, {
+      const response = await fetch(`${API_BASE_URL}/v1/chat/completions/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

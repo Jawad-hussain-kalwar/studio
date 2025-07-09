@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+import socket
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +29,28 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-pro
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+# Allow local access from the LAN as well. Django does not understand CIDR
+# notation like "192.168.1.0/24" in ALLOWED_HOSTS, but it does accept
+# simple glob-style wildcards. The following pattern whitelists every
+# 192.168.1.x address so you can reach the dev server from other devices
+# on the same network (e.g. http://192.168.1.179:8000).
+
+# Determine LAN IP early so we can include it in ALLOWED_HOSTS
+def _guess_lan_ip() -> str:
+    try:
+        hostname = socket.gethostname()
+        return socket.gethostbyname(hostname)
+    except Exception:
+        return 'localhost'
+
+_LAN_IP = _guess_lan_ip()
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    _LAN_IP,  # current machine LAN IP
+]
 
 
 # Application definition
@@ -157,9 +179,24 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
 }
 
+# Google OAuth Configuration
+GOOGLE_OAUTH_CLIENT_ID = config('GOOGLE_OAUTH_CLIENT_ID', default='')
+GOOGLE_OAUTH_CLIENT_SECRET = config('GOOGLE_OAUTH_CLIENT_SECRET', default='')
+
+# Callback defaults
+GOOGLE_OAUTH_REDIRECT_URI = config(
+    'GOOGLE_OAUTH_REDIRECT_URI',
+    default=f'http://{_LAN_IP}:8000/api/auth/oauth/google/callback/'
+)
+
+# Frontend URL used for redirects after OAuth
+FRONTEND_URL = config('FRONTEND_URL', default=f'http://{_LAN_IP}:4173')
+
 # CORS Configuration for Frontend
+# Allow both local dev server and the LAN-exposed Vite preview/build server
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Frontend dev server
+    "http://localhost:5173",  # Vite dev
+    FRONTEND_URL,              # whichever URL we resolved above
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -176,14 +213,6 @@ CORS_ALLOWED_HEADERS = [
     'x-requested-with',
 ]
 
-# Google OAuth Configuration
-GOOGLE_OAUTH_CLIENT_ID = config('GOOGLE_OAUTH_CLIENT_ID', default='')
-GOOGLE_OAUTH_CLIENT_SECRET = config('GOOGLE_OAUTH_CLIENT_SECRET', default='')
-GOOGLE_OAUTH_REDIRECT_URI = 'http://localhost:8000/api/auth/oauth/google/callback/'
-
-# Frontend URLs
-FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
-
 # Disable CSRF for API endpoints (handled by JWT)
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
@@ -191,3 +220,13 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Ollama integration (used by chat_models app)
 OLLAMA_BASE_URL = config('OLLAMA_BASE_URL', default='http://localhost:11434')
+
+# Development: allow any origin when DEBUG is True to simplify LAN testing.
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_CREDENTIALS = True
+    # Ensure browser preflights succeed with common headers
+    CORS_ALLOW_HEADERS = list(CORS_ALLOWED_HEADERS) + [
+        'content-type',
+    ]
+    print("[settings] DEBUG=True → CORS_ALLOW_ALL_ORIGINS enabled for local testing")

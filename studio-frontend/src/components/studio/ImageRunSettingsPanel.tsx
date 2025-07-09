@@ -14,7 +14,8 @@ import {
   Switch,
   FormControlLabel,
 } from '@mui/material';
-import { ExpandMoreOutlined as ExpandMoreIcon, ScienceOutlined as ScienceIcon } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMoreOutlined';
+import ScienceIcon from '@mui/icons-material/ScienceOutlined';
 
 /**
  * ImageRunSettingsPanel
