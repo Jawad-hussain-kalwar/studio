@@ -8,9 +8,8 @@ interface Props {
 }
 
 const ErrorsDonutCard: React.FC<Props> = ({ data }) => {
-  const total = data.reduce((sum, d) => sum + d.value, 0).toLocaleString();
   return (
-    <MetricCard title="Errors" headline={total} height="100%">
+    <MetricCard title="Errors" height="100%">
       <ErrorsDonutChart data={data} />
     </MetricCard>
   );
