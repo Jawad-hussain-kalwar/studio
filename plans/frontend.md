@@ -1,111 +1,157 @@
-# 🧩 Chat System Frontend Plan
+# Frontend Implementation
 
-## Purpose
-Deliver a modern, streaming AI chat experience using React 19 and the Vercel AI SDK, with a responsive, accessible, and extensible UI.
+## Current Status
 
----
+React 19 frontend with TypeScript, MUI components, and Zustand state management. Features functional chat playground, analytics dashboard, and Google OAuth authentication.
 
-## Core Components
-- `ChatPlaygroundPage`: Main chat UI
-- `useChat` (from `@ai-sdk/react`): Handles message state, streaming, abort, and UI updates
-- `RunSettingsPanel`: Model selector, temperature, tool toggles
-- `TokenCountMeter`: Displays prompt/completion/total tokens
+## Tech Stack
 
----
+- **React**: 19.1.0 with modern hooks
+- **TypeScript**: 5.8.3 with strict config
+- **Material UI**: 7.1.2 for components
+- **Zustand**: 5.0.5 for client state
+- **React Query**: 5.81.2 for server state
+- **React Router**: 7.6.2 for routing
+- **Vite**: 7.0.0 for build tooling
+
+## Implemented Features
+
+### Authentication
+- Google OAuth flow with JWT tokens
+- Protected routes with automatic redirects
+- Token storage in localStorage
+- User profile in TopBar
+
+### Chat Playground
+- **Components**:
+  - `ChatPlaygroundPage`: Main container
+  - `ChatMessageList`: Message display
+  - `ChatInputDock`: Auto-resize input
+  - `RunSettingsPanel`: Model and parameters
+  - `PromptCardGrid`: Quick start prompts
+- **Features**:
+  - Streaming responses via SSE
+  - Model selection from API
+  - Temperature/Top-P controls
+  - Token counting display
+  - Tool toggles (UI only)
+  - Auto-scroll on new messages
+
+### Dashboard Analytics
+- **Components**:
+  - `DashboardPage`: Main container
+  - `DashboardGrid`: Chart layout
+  - `TimeRangeTabs`: Period selection
+  - Multiple chart components (MUI X Charts)
+- **Features**:
+  - Real-time data from backend
+  - 30-second auto-refresh
+  - Time range filtering
+  - Responsive chart grid
+
+### Image Generation (UI Only)
+- **Components**:
+  - `GenerateImagePage`: Main container
+  - `ImageRunSettingsPanel`: Parameters
+  - `ImageCanvas`: Placeholder display
+- **Features**:
+  - Complete UI with all controls
+  - No backend integration
+  - Static placeholder image
+
+### Theme System
+- Dark/Light/System modes
+- Glassmorphic design
+- Teal (#009688) and Lime-Yellow (#CDDC39)
+- Persistent theme preference
+
+## Page Structure
+
+### Public Routes
+- `/` - Landing page
+- `/signin` - Sign in with OAuth
+- `/signup` - Sign up with OAuth
+
+### Protected Routes
+- `/app` → redirects to `/app/studio/chat`
+- `/app/studio/chat` - Chat playground
+- `/app/studio/generate/image` - Image generation UI
+- `/app/dashboard` - Analytics dashboard
+- `/app/api-keys` - API keys page (minimal)
+
+### Coming Soon Pages
+- `/app/home` - Home page
+- `/app/studio/stream` - Stream playground
+- `/app/studio/generate/speech` - Speech generation
+- `/app/studio/generate/media` - Media generation
+- `/app/studio/build` - Build playground
+- `/app/studio/history` - Chat history
 
 ## State Management
-- Local state: Zustand for UI state (messages, model, temperature, etc.)
-- Server state: React Query for models and chat completions
 
----
+### Zustand Store (studioStore)
+```typescript
+interface StudioStore {
+  messages: Message[];
+  model: string;
+  temperature: number;
+  topP: number;
+  // ... other chat state
+}
+```
+
+### React Query
+- Models list caching
+- Dashboard data fetching
+- 30-second refresh intervals
 
 ## API Integration
-- Uses `/v1/chat/completions` for chat (streaming and non-streaming)
-- Uses `/v1/models` for model listing
 
----
+### HTTP Client (axios)
+- Base URL configuration
+- Bearer token interceptor
+- 401 redirect handling
+- 30-second timeout
 
-## Streaming
-- Uses `useChat` to handle streaming responses from the backend.
-- UI updates incrementally as tokens arrive.
-- Supports abort/stop generation via AbortController.
+### Endpoints Used
+- `/api/auth/oauth/google/`
+- `/v1/chat/completions`
+- `/v1/models`
+- `/api/dashboard/`
 
----
+## Not Implemented
 
-## UI/UX
-- Responsive, accessible design with theming (teal and lime-yellow)
-- Keyboard shortcuts and ARIA support
-- Error boundaries and toast notifications for error handling
+1. **Chat History**: No persistence
+2. **Tool Calling**: UI toggles only
+3. **Image Generation**: No API calls
+4. **API Key Modal**: Button exists, no modal
+5. **User Settings**: No preferences page
+6. **Team/Workspace**: No multi-user features
 
----
+## Component Architecture
 
-## Extensibility
-- Planned: persistent chat history, multi-session support, advanced tools (function calling, image generation)
-- Easy integration of new models via `/v1/models`
+### Layout Components
+- `AppLayout`: Main authenticated layout
+- `SideNav`: Navigation sidebar
+- `TopBar`: Header with user menu
+- `ProtectedRoute`: Auth wrapper
 
----
+### Reusable Components
+- `ThemeToggle`: Theme switcher
+- `ComingSoon`: Placeholder pages
+- `OAuthCallback`: OAuth handler
 
-## Data Contracts
+## Development Setup
 
-### Chat Completion Request
-```json
-{
-  "model": "llama3",
-  "messages": [
-    {"role": "user", "content": "Hello"},
-    {"role": "assistant", "content": "Hi there!"}
-  ],
-  "temperature": 1.0,
-  "topP": 0.95,
-  "tools": [],
-  "stream": true
-}
+```bash
+cd studio-frontend
+npm install
+npm run dev
 ```
 
-### Streaming Response
-```json
-// Each chunk:
-data: {"choices":[{"delta":{"content":"Hello"}}]}
-// ...
-data: [DONE]
-```
-
-### Final Response (non-streaming or last chunk)
-```json
-{
-  "id": "chatcmpl-123",
-  "choices": [{
-    "message": {
-      "role": "assistant",
-      "content": "Hello! How can I help you today?"
-    },
-    "finishReason": "stop"
-  }],
-  "usage": {
-    "promptTokens": 10,
-    "completionTokens": 15,
-    "totalTokens": 25
-  }
-}
-```
-
----
-
-## Implementation Priorities
-1. Streaming chat UI with Vercel AI SDK
-2. Model listing integration
-3. Session persistence and history (future)
-4. Usage tracking and analytics (future)
-
----
-
-## Future Enhancements
-- Persistent chat history and multi-session support
-- Advanced tool calling and function execution
-- Image, audio, and multimodal generation
-- Usage analytics and billing integration
-- Team/workspace support
-
----
-
-**This plan is the single source of truth for the frontend chat system. All implementation and documentation should align with this architecture.**
+### Available Scripts
+- `npm run dev` - Development server
+- `npm run build` - Production build
+- `npm run lint` - ESLint check
+- `npm run format` - Prettier format
+- `npm run type-check` - TypeScript check

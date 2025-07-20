@@ -21,7 +21,7 @@ ollama==0.3.3
 # Development dependencies
 python-decouple==3.8  # For environment variable management
 
-# Optional: PostgreSQL support (for production)
+# Required: PostgreSQL support (for production)
 psycopg2-binary==2.9.9
 
 # Optional: Redis support (for caching/sessions)

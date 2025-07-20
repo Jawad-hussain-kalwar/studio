@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     # Local apps
     'authentication',
     'chat_models',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -82,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'dashboard.middleware.RequestLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'studio_backend.urls'
@@ -108,12 +110,16 @@ WSGI_APPLICATION = 'studio_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Use SQLite for development (simple, no setup required)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Production can override with PostgreSQL via environment variables:
+# POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT
 
 
 # Password validation

@@ -1,227 +1,139 @@
-# 🤖 Model Management Requirements
+# Models API Implementation
 
-## Purpose
-Provide model information to frontend and proxy model requests to inference service.
+## Current Status
 
-## Frontend Reality Check
-- **RunSettingsPanel**: Shows model dropdown with name/description
-- **HARDCODED MODELS**: Frontend has static `availableModels` array, doesn't call API!
-- **Model switching**: Changes model for chat/image generation via studioStore
-- **No complex features**: No model training, fine-tuning, or management
-- **ModelInfo interface**: Expects `id`, `name`, `description`, `contextLength` (camelCase)
+The `/v1/models` endpoint is implemented and returns dynamic model information from Ollama. Frontend currently uses this endpoint to populate model dropdowns with enhanced metadata.
 
-## CRITICAL FINDINGS:
-1. **Frontend uses hardcoded models** - doesn't call `/v1/models` endpoint yet
-2. **Response format mismatch** - frontend expects camelCase `contextLength`
-3. **Models are static** - no dynamic loading from inference service
+## Implemented Features
 
-## API Endpoints
-```
-GET /v1/models                        # List available models (NOT USED YET)
-GET /v1/models/{model_id}             # Get model details (optional)
-```
+### 1. Dynamic Model Listing
+- Fetches available models from Ollama
+- Adds computed metadata fields
+- Returns OpenAI-compatible format
+- Includes capabilities detection
 
-## Model Information Response (MUST MATCH FRONTEND)
-```python
-# Expected frontend format (matches TypeScript ModelInfo interface)
-[
+### 2. Model Metadata
+- **displayLabel**: Human-friendly model name
+- **contextLength**: Maximum token context
+- **capabilities**: Array of supported features
+- **metadata**: Detailed model information
+
+## API Endpoint
+
+| Method | Endpoint | Purpose | Auth |
+|--------|----------|---------|------|
+| `GET` | `/v1/models` | List available models | AllowAny |
+
+## Response Format
+
+### Models List Response
+```json
+{
+  "object": "list",
+  "data": [
     {
-        "id": "gemini-2.5-flash-preview-04-17",
-        "name": "Gemini 2.5 Flash Preview 04-17", 
-        "description": "Latest preview model with enhanced capabilities",
-        "contextLength": 1048576  # camelCase! Frontend expects this exactly
+      "id": "llama3.2",
+      "object": "model",
+      "displayLabel": "llama GGUF 3.2B Q4_0",
+      "contextLength": 131072,
+      "capabilities": ["tools", "vision"],
+      "metadata": {
+        "family": "llama",
+        "format": "GGUF",
+        "parameterSize": "3.2B",
+        "quantizationLevel": "Q4_0",
+        "architectureDetails": {
+          "heads": 32,
+          "layers": 28,
+          "embeddingLength": 3072,
+          "headDim": 96
+        }
+      }
     },
     {
-        "id": "gemini-1.5-pro",
-        "name": "Gemini 1.5 Pro",
-        "description": "Advanced reasoning and long context",
-        "contextLength": 2097152  # camelCase!
-    },
-    {
-        "id": "gemini-1.5-flash",
-        "name": "Gemini 1.5 Flash", 
-        "description": "Fast and efficient for most tasks",
-        "contextLength": 1048576  # camelCase!
+      "id": "gpt-4o-mini",
+      "object": "model",
+      "displayLabel": "gpt-4o-mini GPT 8B Q8_0",
+      "contextLength": 128000,
+      "capabilities": ["tools"],
+      "metadata": {
+        "family": "gpt-4o-mini",
+        "format": "GPT",
+        "parameterSize": "8B",
+        "quantizationLevel": "Q8_0"
+      }
     }
-]
-```
-
-## Current Frontend Hardcoded Models (FROM RunSettingsPanel.tsx)
-```typescript
-const availableModels = [
-  {
-    id: 'gemini-2.5-flash-preview-04-17',
-    name: 'Gemini 2.5 Flash Preview 04-17',
-    description: 'Latest preview model with enhanced capabilities',
-  },
-  {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    description: 'Advanced reasoning and long context',
-  },
-  {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    description: 'Fast and efficient for most tasks',
-  },
-];
-```
-
-## Database Model (Optional - Start with Static)
-```python
-class Model(models.Model):
-    """Store model metadata for frontend display"""
-    id = models.CharField(max_length=100, primary_key=True)  # e.g., 'gemini-1.5-pro'
-    name = models.CharField(max_length=255)  # Display name
-    description = models.TextField()  # User-friendly description
-    context_length = models.IntegerField()  # Max context tokens
-    model_type = models.CharField(max_length=50, choices=[
-        ('chat', 'Chat Completion'),
-        ('image', 'Image Generation'),
-        ('speech', 'Speech Generation'),
-    ])
-    is_active = models.BooleanField(default=True)
-    provider = models.CharField(max_length=100)  # e.g., 'google', 'openai'
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.name
-```
-
-## Image Generation Models (MATCH FRONTEND)
-```python
-# For ImageRunSettingsPanel (current frontend hardcoded models)
-[
-    {
-        "id": "sdxl",
-        "name": "Stable Diffusion XL",
-        "description": "High-quality image generation",
-        "provider": "StabilityAI"
-    },
-    {
-        "id": "sdxl-lightning", 
-        "name": "SDXL-Lightning",
-        "description": "Fast SDXL variant",
-        "provider": "StabilityAI"
-    },
-    {
-        "id": "flux-schnell",
-        "name": "Flux Schnell", 
-        "description": "Fast image generation",
-        "provider": "Flux"
-    },
-    {
-        "id": "flux-pro",
-        "name": "Flux Pro",
-        "description": "High-quality image generation", 
-        "provider": "Flux"
-    }
-]
-```
-
-## Static Model Configuration (INITIAL IMPLEMENTATION)
-```python
-# Option 1: Static configuration (matches frontend exactly)
-AVAILABLE_MODELS = {
-    'chat': [
-        {
-            'id': 'gemini-2.5-flash-preview-04-17',
-            'name': 'Gemini 2.5 Flash Preview 04-17',
-            'description': 'Latest preview model with enhanced capabilities',
-            'contextLength': 1048576,  # camelCase for frontend
-        },
-        {
-            'id': 'gemini-1.5-pro',
-            'name': 'Gemini 1.5 Pro',
-            'description': 'Advanced reasoning and long context',
-            'contextLength': 2097152,
-        },
-        {
-            'id': 'gemini-1.5-flash',
-            'name': 'Gemini 1.5 Flash',
-            'description': 'Fast and efficient for most tasks',
-            'contextLength': 1048576,
-        },
-    ],
-    'image': [
-        {
-            'id': 'sdxl',
-            'name': 'Stable Diffusion XL', 
-            'description': 'High-quality image generation',
-            'provider': 'StabilityAI',
-        },
-        {
-            'id': 'sdxl-lightning',
-            'name': 'SDXL-Lightning',
-            'description': 'Fast SDXL variant', 
-            'provider': 'StabilityAI',
-        },
-        {
-            'id': 'flux-schnell',
-            'name': 'Flux Schnell',
-            'description': 'Fast image generation',
-            'provider': 'Flux',
-        },
-        {
-            'id': 'flux-pro',
-            'name': 'Flux Pro',
-            'description': 'High-quality image generation',
-            'provider': 'Flux',
-        },
-    ]
+  ]
 }
-
-# Option 2: Fetch from inference service (future)
-def get_models_from_inference():
-    """Fetch available models from inference service"""
-    response = requests.get(f"{INFERENCE_SERVICE_URL}/models")
-    models = response.json()
-    # Convert to frontend format with camelCase
-    return [{
-        'id': model['id'],
-        'name': model['name'],
-        'description': model['description'],
-        'contextLength': model.get('context_length', 1048576)
-    } for model in models]
 ```
 
-## Model Categories
+## Implementation Details
+
+### OllamaClient Integration
+The models endpoint uses the same `OllamaClient` class as chat:
+- Fetches models via `ollama.list()`
+- Extracts metadata from model details
+- Computes display labels and capabilities
+- Handles connection errors gracefully
+
+### Metadata Extraction
 ```python
-# Frontend expects different models for different tasks
-GET /v1/models?type=chat              # Chat completion models
-GET /v1/models?type=image             # Image generation models  
-GET /v1/models?type=speech            # Speech generation models
+def _extract_metadata(self, model_dict):
+    """Extract structured metadata from Ollama model"""
+    details = model_dict.get('details', {})
+    
+    # Extract architecture info
+    family = details.get('family', 'unknown')
+    parameter_size = details.get('parameter_size', '')
+    quantization = details.get('quantization_level', '')
+    
+    # Compute context length
+    context_length = self._get_context_length(model_dict)
+    
+    # Detect capabilities
+    capabilities = self._detect_capabilities(model_dict)
+    
+    return metadata
 ```
 
-## Caching Strategy
-```python
-# Cache model list for performance
-@cache_for(minutes=30)
-def get_available_models():
-    """Cache model list to avoid repeated inference service calls"""
-    return fetch_models_from_inference_service()
-```
+### Frontend Integration
+Frontend caches model list in localStorage:
+- 10-minute cache duration
+- Reduces API calls on page reloads
+- Updates automatically when cache expires
+
+## Model Families Supported
+
+Based on actual Ollama models:
+- **llama**: Various Llama models
+- **gpt-4o-mini**: OpenAI compatible models
+- **gemma**: Google's Gemma models
+- **phi**: Microsoft Phi models
+- **qwen**: Alibaba Qwen models
+- **mistral**: Mistral AI models
+
+## Not Implemented
+
+1. **Model Details Endpoint**: No `/v1/models/{id}` endpoint
+2. **Image Models**: No image generation models listed
+3. **Model Management**: No CRUD operations
+4. **Model Training**: No fine-tuning support
+5. **Model Uploading**: No custom model upload
 
 ## Configuration
-```env
-# Model service settings
-INFERENCE_SERVICE_URL=http://localhost:8001
-MODEL_CACHE_TIMEOUT=1800  # 30 minutes
-DEFAULT_CHAT_MODEL=gemini-1.5-flash
-DEFAULT_IMAGE_MODEL=sdxl
+
+Models available depend on what's installed in Ollama:
+```bash
+# Install models in Ollama
+ollama pull llama3.2
+ollama pull gpt-4o-mini
+ollama pull gemma2
 ```
 
-## Implementation Priority
-1. **Start with static configuration** - matches current frontend exactly
-2. **Add /v1/models endpoint** - for when frontend removes hardcoded models
-3. **Database storage** - later for admin management
-4. **Dynamic loading** - when inference service integration needed
+## Frontend Usage
 
-## Implementation Notes
-- **Start with static model configuration** - frontend is hardcoded anyway
-- **Match frontend camelCase format** for `contextLength`
-- Frontend expects immediate response (< 200ms)
-- Models are selected per-request, not per-user
-- No model training or fine-tuning features needed
-- **Frontend needs updating** to call `/v1/models` instead of hardcoded array
-- Inference service handles actual model loading/management 
+Frontend `RunSettingsPanel`:
+1. Fetches models on component mount
+2. Displays in dropdown with `displayLabel`
+3. Shows context length in token counter
+4. Enables/disables tools based on capabilities 

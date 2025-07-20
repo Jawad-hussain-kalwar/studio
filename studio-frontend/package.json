@@ -19,6 +19,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.2",
+    "@mui/x-charts": "^7.0.0",
     "@tanstack/react-query": "^5.81.2",
     "ai": "^4.3.17",
     "axios": "^1.10.0",
