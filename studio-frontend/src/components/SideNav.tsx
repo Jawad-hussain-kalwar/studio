@@ -14,7 +14,7 @@ import StreamIcon from '@mui/icons-material/StreamOutlined';
 import ImageIcon from '@mui/icons-material/ImageOutlined';
 import MicIcon from '@mui/icons-material/MicOutlined';
 import MediaIcon from '@mui/icons-material/VideoLibraryOutlined';
-import BuildIcon from '@mui/icons-material/BuildOutlined';
+import AppsIcon from '@mui/icons-material/AppsOutlined';
 import HistoryIcon from '@mui/icons-material/HistoryOutlined';
 import HomeIcon from '@mui/icons-material/HomeOutlined';
 import DashboardIcon from '@mui/icons-material/DashboardOutlined';
@@ -38,7 +38,7 @@ const navItems: NavItem[] = [
   { label: 'Generate Image', path: '/app/studio/generate/image', icon: <ImageIcon />, section: 'studio' },
   { label: 'Generate Speech', path: '/app/studio/generate/speech', icon: <MicIcon />, section: 'studio' },
   { label: 'Generate Media', path: '/app/studio/generate/media', icon: <MediaIcon />, section: 'studio' },
-  { label: 'Build', path: '/app/studio/build', icon: <BuildIcon />, section: 'studio' },
+  { label: 'Showcase', path: '/app/studio/showcase', icon: <AppsIcon />, section: 'studio' },
   { label: 'History', path: '/app/studio/history', icon: <HistoryIcon />, section: 'studio' },
 ];
 
@@ -57,9 +57,7 @@ const SideNav: React.FC = () => {
         width: DRAWER_WIDTH,
         height: '100%',
         // Match TopBar glassmorphic background
-        backgroundColor: (theme) => theme.palette.mode === 'light'
-          ? 'rgb(255,255,255)'
-          : 'rgb(0,0,0)',
+        backgroundColor: (theme) => theme.palette.navigation.background,
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         // Remove the right border outline for a cleaner look
@@ -129,7 +127,7 @@ const SideNav: React.FC = () => {
               display: 'block',
               letterSpacing: 1,
               // Gradient text
-              background: 'linear-gradient(90deg, #009688 0%, #4caf50 100%)',
+              background: (theme) => theme.customGradients.primary,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}

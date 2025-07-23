@@ -75,9 +75,7 @@ const TopBar: React.FC = () => {
       elevation={0}
       sx={{
         // Glassmorphic background at 50% visibility
-        backgroundColor: (theme) => theme.palette.mode === 'light'
-          ? 'rgba(255,255,255,0.5)'
-          : 'rgba(0,0,0,0.5)',
+        backgroundColor: (theme) => theme.palette.navigation.backgroundTransparent,
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)', // Safari support
         color: 'text.primary',
@@ -105,8 +103,7 @@ const TopBar: React.FC = () => {
             variant="h5"
             sx={{
               fontWeight: 600,
-              background:
-                'linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%)',
+              background: (theme) => theme.customGradients.brand,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
@@ -219,7 +216,7 @@ const TopBar: React.FC = () => {
             color: 'primary.main',
             '&:hover': {
               borderColor: 'primary.dark',
-              bgcolor: alpha('#009688', 0.04),
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
             },
           }}
         >

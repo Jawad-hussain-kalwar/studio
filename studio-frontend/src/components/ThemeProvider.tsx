@@ -66,7 +66,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             default: isDark ? "#121212" : "#fafafa",
             paper: isDark ? "#1e1e1e" : "#ffffff",
           },
-          // Custom colors for glassmorphism
+          // Extended color system for consistent theming
           ...(isDark
             ? {
                 // Dark mode custom colors
@@ -74,6 +74,33 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   background: "rgba(255, 255, 255, 0.1)",
                   border: "rgba(255, 255, 255, 0.1)",
                   blur: "12px",
+                },
+                // Navigation colors
+                navigation: {
+                  background: "rgb(0,0,0)",
+                  backgroundTransparent: "rgba(0,0,0,0.5)",
+                },
+                // Page backgrounds with transparency for glassmorphism
+                pageBackground: {
+                  default: "rgba(18, 18, 18, 0.8)",
+                  transparent: "rgba(18, 18, 18, 0.6)",
+                },
+                // Form and input colors for auth pages
+                auth: {
+                  inputBackground: "rgba(255, 255, 255, 0.2)",
+                  inputBorder: "rgba(255, 255, 255, 0.3)",
+                  inputLabel: "rgba(255, 255, 255, 0.7)",
+                  buttonHover: "rgba(255, 255, 255, 0.3)",
+                  glassPanel: "rgba(255, 255, 255, 0.1)",
+                  glassBorder: "rgba(255, 255, 255, 0.1)",
+                },
+                // Chart colors
+                chart: {
+                  colors: ["#42A5F5", "#26C6DA", "#66BB6A", "#FFA726", "#EF5350", "#AB47BC"],
+                },
+                // Code block backgrounds
+                codeBlock: {
+                  background: "#121212",
                 },
               }
             : {
@@ -83,7 +110,40 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   border: "rgba(255, 255, 255, 0.3)",
                   blur: "20px",
                 },
+                // Navigation colors
+                navigation: {
+                  background: "rgb(255,255,255)",
+                  backgroundTransparent: "rgba(255,255,255,0.5)",
+                },
+                // Page backgrounds with transparency for glassmorphism
+                pageBackground: {
+                  default: "rgba(250, 250, 250, 0.8)",
+                  transparent: "rgba(250, 250, 250, 0.6)",
+                },
+                // Form and input colors for auth pages
+                auth: {
+                  inputBackground: "rgba(255, 255, 255, 0.2)",
+                  inputBorder: "rgba(255, 255, 255, 0.3)",
+                  inputLabel: "rgba(255, 255, 255, 0.7)",
+                  buttonHover: "rgba(255, 255, 255, 0.3)",
+                  glassPanel: "rgba(255, 255, 255, 0.6)",
+                  glassBorder: "rgba(255, 255, 255, 0.3)",
+                },
+                // Chart colors
+                chart: {
+                  colors: ["#2196F3", "#00BCD4", "#009688", "#4CAF50", "#FF9800", "#9C27B0"],
+                },
+                // Code block backgrounds
+                codeBlock: {
+                  background: "#f5f5f5",
+                },
               }),
+        },
+        // Add custom gradients to theme
+        customGradients: {
+          brand: "linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%)",
+          primary: "linear-gradient(90deg, #009688 0%, #4caf50 100%)",
+          welcome: "linear-gradient(90deg, #009688 0%, #8bc34a 50%, #e9d842 100%)",
         },
         typography: {
           // Reduce overall scale for a more compact interface

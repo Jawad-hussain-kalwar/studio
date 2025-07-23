@@ -70,7 +70,7 @@ const ApiKeysPage: React.FC = () => {
           sx={{
             m: 0,
             p: 2,
-            bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'grey.900' : 'grey.100'),
+            bgcolor: (theme) => theme.palette.codeBlock.background,
             borderRadius: 1,
             fontSize: 12,
             overflow: 'auto',

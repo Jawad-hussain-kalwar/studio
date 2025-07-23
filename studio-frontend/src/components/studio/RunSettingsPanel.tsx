@@ -131,9 +131,7 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
         width: PANEL_WIDTH,
         height: '100%',
         // Match TopBar glassmorphic background
-        backgroundColor: (theme) => theme.palette.mode === 'light'
-          ? 'rgb(255,255,255)'
-          : 'rgb(0,0,0)',
+        backgroundColor: (theme) => theme.palette.navigation.background,
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         // Remove the left border outline for a seamless layout
@@ -216,7 +214,7 @@ const RunSettingsPanel: React.FC<RunSettingsPanelProps> = () => {
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: 1, // Match model dropdown border radius
-              bgcolor: alpha('#009688', 0.02),
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.02),
             }}
           >
             <Typography variant="subtitle2" gutterBottom>

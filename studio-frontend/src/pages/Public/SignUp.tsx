@@ -128,6 +128,7 @@ import AppleOutlined from "@mui/icons-material/Apple";
 import { API_BASE_URL } from "../../api/http";
 import { useThemeBackground, useGlassStyles } from "../../components/themeHelpers.tsx";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { alpha } from "@mui/material/styles";
 
 const SignUp = () => {
   const [searchParams] = useSearchParams();
@@ -273,8 +274,7 @@ const SignUp = () => {
               sx={{
                 fontSize: "1rem",
                 fontWeight: "600",
-                background:
-                  "linear-gradient(90deg, #014d4e 0%, #009688 25%, #8bc34a 75%, #e9d842 100%)",
+                background: (theme) => theme.customGradients.brand,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 textShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
@@ -290,10 +290,10 @@ const SignUp = () => {
               severity="error" 
               sx={{ 
                 mb: 2, 
-                bgcolor: "rgba(211, 47, 47, 0.1)",
+                bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
                 color: "white",
                 "& .MuiAlert-icon": {
-                  color: "#ff6b6b"
+                  color: (theme) => theme.palette.error.light,
                 }
               }}
             >
@@ -323,16 +323,16 @@ const SignUp = () => {
               sx={{
                 justifyContent: "flex-start",
                 height: 56,
-                bgcolor: "rgba(255,255,255,0.2)",
+                bgcolor: (theme) => theme.palette.auth.inputBackground,
                 color: "white",
-                borderColor: "rgba(255,255,255,0.3)",
+                borderColor: (theme) => theme.palette.auth.inputBorder,
                 fontWeight: "500",
                 fontSize: "0.8rem",
                 paddingLeft: "28px",
                 paddingRight: "20px",
                 "&:hover": {
-                  bgcolor: "rgba(255,255,255,0.3)",
-                  borderColor: "rgba(255,255,255,0.5)",
+                  bgcolor: (theme) => theme.palette.auth.buttonHover,
+                  borderColor: (theme) => theme.palette.auth.buttonHover,
                 },
               }}
             >
@@ -346,16 +346,16 @@ const SignUp = () => {
               sx={{
                 justifyContent: "flex-start",
                 height: 56,
-                bgcolor: "rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.5)",
-                borderColor: "rgba(255,255,255,0.2)",
+                bgcolor: (theme) => theme.palette.auth.glassPanel,
+                color: (theme) => theme.palette.auth.inputLabel,
+                borderColor: (theme) => theme.palette.auth.glassBorder,
                 fontWeight: "500",
                 fontSize: "0.8rem",
                 paddingLeft: "28px",
                 paddingRight: "20px",
                 "&:hover": {
-                  bgcolor: "rgba(255,255,255,0.1)",
-                  borderColor: "rgba(255,255,255,0.2)",
+                  bgcolor: (theme) => theme.palette.auth.glassPanel,
+                  borderColor: (theme) => theme.palette.auth.glassBorder,
                 },
               }}
             >

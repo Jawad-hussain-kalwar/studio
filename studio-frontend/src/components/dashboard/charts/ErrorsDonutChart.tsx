@@ -14,14 +14,7 @@ const ErrorsDonutChart: React.FC<Props> = ({ data }) => {
   
   // Dynamic color assignment based on error types
   const getColorForErrorType = (label: string, index: number) => {
-    const colors = [
-      '#2196F3', // Blue 
-      '#00BCD4', // Teal  
-      '#009688', // Darker teal
-      '#4CAF50', // Green for additional types
-      '#FF9800', // Orange for additional types
-    ];
-    return colors[index % colors.length];
+    return theme.palette.chart.colors[index % theme.palette.chart.colors.length];
   };
 
   const chartData = data.map((item, idx) => ({

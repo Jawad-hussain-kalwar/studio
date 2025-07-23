@@ -250,8 +250,8 @@ const ChatInputDock: React.FC<ChatInputDockProps> = ({
               },
               '&:not(:disabled)': {
                 '&:hover': {
-                  bgcolor: alpha('#CDDC39', 0.9), // Lime-yellow on hover
-                  color: 'rgba(0,0,0,0.87)',
+                  bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.9), // Lime-yellow on hover
+                  color: 'text.primary',
                 },
               },
               transition: 'all 0.2s ease-in-out',

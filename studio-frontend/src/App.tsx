@@ -12,6 +12,7 @@ import DashboardPage from "./pages/App/DashboardPage.tsx";
 import OAuthCallback from "./components/OAuthCallback.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import ApiKeysPage from "./pages/App/ApiKeysPage.tsx";
+import ShowcasePage from "./pages/App/Studio/ShowcasePage.tsx";
 
 const AppWithOAuthCheck = () => {
   const [searchParams] = useSearchParams();
@@ -50,7 +51,7 @@ function App() {
             <Route path="studio/generate/image" element={<GenerateImagePage />} />
             <Route path="studio/generate/speech" element={<ComingSoon message="Speech Generation - Coming Soon" />} />
             <Route path="studio/generate/media" element={<ComingSoon message="Media Generation - Coming Soon" />} />
-            <Route path="studio/build" element={<ComingSoon message="Build Playground - Coming Soon" />} />
+            <Route path="studio/showcase" element={<ShowcasePage />} />
             <Route path="studio/history" element={<ComingSoon message="History - Coming Soon" />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="api-keys" element={<ApiKeysPage />} />

@@ -21,7 +21,7 @@ const JsonBlock: React.FC<{ data: unknown }> = ({ data }) => (
   <Box
     component="pre"
     sx={{
-      bgcolor: (theme) => theme.palette.mode === 'light' ? '#f5f5f5' : '#121212',
+      bgcolor: (theme) => theme.palette.codeBlock.background,
       p: 2,
       borderRadius: 1,
       overflow: 'auto',

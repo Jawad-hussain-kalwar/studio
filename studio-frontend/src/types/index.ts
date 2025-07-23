@@ -85,5 +85,86 @@ OAuth Provider Values:
 =============================================================================
 */
 
-// Re-export all types from chat.ts
+// Re-export all types from other modules
 export * from './chat.ts';
+export * from './dashboard.ts';
+export * from './showcase.ts';
+
+// Extended MUI Theme types for custom properties
+declare module '@mui/material/styles' {
+  interface Theme {
+    customGradients: {
+      brand: string;
+      primary: string;
+      welcome: string;
+    };
+  }
+
+  interface ThemeOptions {
+    customGradients?: {
+      brand?: string;
+      primary?: string;
+      welcome?: string;
+    };
+  }
+
+  interface Palette {
+    customGlass: {
+      background: string;
+      border: string;
+      blur: string;
+    };
+    navigation: {
+      background: string;
+      backgroundTransparent: string;
+    };
+    pageBackground: {
+      default: string;
+      transparent: string;
+    };
+    auth: {
+      inputBackground: string;
+      inputBorder: string;
+      inputLabel: string;
+      buttonHover: string;
+      glassPanel: string;
+      glassBorder: string;
+    };
+    chart: {
+      colors: string[];
+    };
+    codeBlock: {
+      background: string;
+    };
+  }
+
+  interface PaletteOptions {
+    customGlass?: {
+      background?: string;
+      border?: string;
+      blur?: string;
+    };
+    navigation?: {
+      background?: string;
+      backgroundTransparent?: string;
+    };
+    pageBackground?: {
+      default?: string;
+      transparent?: string;
+    };
+    auth?: {
+      inputBackground?: string;
+      inputBorder?: string;
+      inputLabel?: string;
+      buttonHover?: string;
+      glassPanel?: string;
+      glassBorder?: string;
+    };
+    chart?: {
+      colors?: string[];
+    };
+    codeBlock?: {
+      background?: string;
+    };
+  }
+}

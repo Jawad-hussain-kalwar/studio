@@ -66,8 +66,7 @@ const ImageRunSettingsPanel: React.FC = () => {
       sx={{
         width: PANEL_WIDTH,
         height: '100%',
-        backgroundColor: (theme) =>
-          theme.palette.mode === 'light' ? 'rgb(255,255,255)' : 'rgb(0,0,0)',
+        backgroundColor: (theme) => theme.palette.navigation.background,
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         borderLeft: 'none',

@@ -63,7 +63,7 @@ const PromptCardGrid: React.FC<PromptCardGridProps> = ({ onPromptSelect }) => {
         sx={{
           fontSize: { xs: '2rem', md: '2.5rem' },
           fontWeight: 500,
-          background: 'linear-gradient(90deg, #009688 0%, #8bc34a 50%, #e9d842 100%)',
+          background: (theme) => theme.customGradients.welcome,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           textAlign: 'center',

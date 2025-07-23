@@ -75,14 +75,14 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => {
           elevation={0}
           sx={{
             p: 2,
-            bgcolor: isUser ? alpha('#009688', 0.1) : 'background.paper',
+            bgcolor: isUser ? (theme) => alpha(theme.palette.primary.main, 0.1) : 'background.paper',
             border: '1px solid',
-            borderColor: isUser ? alpha('#009688', 0.2) : 'divider',
+            borderColor: isUser ? (theme) => alpha(theme.palette.primary.main, 0.2) : 'divider',
             borderRadius: 2,
             position: 'relative',
             ...(message.error && {
               borderColor: 'error.main',
-              bgcolor: alpha('#f44336', 0.05),
+              bgcolor: (theme) => alpha(theme.palette.error.main, 0.05),
             }),
           }}
         >
@@ -104,10 +104,10 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => {
               sx={{
                 mt: 2,
                 p: 1.5,
-                bgcolor: alpha('#009688', 0.05),
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.05),
                 borderRadius: 1,
                 border: '1px solid',
-                borderColor: alpha('#009688', 0.2),
+                borderColor: (theme) => alpha(theme.palette.primary.main, 0.2),
               }}
             >
               <Typography variant="caption" color="primary" fontWeight={600}>

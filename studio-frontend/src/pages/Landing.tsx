@@ -16,9 +16,9 @@ const Landing = () => {
         <ThemeToggle
           includeSystemMode={true}
           sx={{
-            bgcolor: "rgba(0,0,0,0.1)",
+            bgcolor: (theme) => theme.palette.auth.glassPanel,
             "&:hover": {
-              bgcolor: "rgba(0,0,0,0.2)",
+              bgcolor: (theme) => theme.palette.auth.buttonHover,
             },
           }}
         />
